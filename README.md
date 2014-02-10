@@ -1,8 +1,8 @@
 MGTemplateEngine
-By Matt Legend Gemmell
+----------------
+
+By Matt Legend Gemmell<br>
 http://mattgemmell.com/ 
-
-
 
 What is it?
 -----------
