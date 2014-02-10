@@ -30,8 +30,8 @@
 
 @interface MGTemplateEngine (PrivateMethods)
 
-- (NSObject *)valueForVariable:(NSString *)var parent:(NSObject **)parent parentKey:(NSString **)parentKey;
-- (void)setValue:(NSObject *)newValue forVariable:(NSString *)var forceCurrentStackFrame:(BOOL)inStackFrame;
+- (id)valueForVariable:(NSString *)var parent:(id *)parent parentKey:(NSString **)parentKey;
+- (void)setValue:(id)newValue forVariable:(NSString *)var forceCurrentStackFrame:(BOOL)inStackFrame;
 - (void)reportError:(NSString *)errorStr code:(int)code continuing:(BOOL)continuing;
 - (void)reportBlockBoundaryStarted:(BOOL)started;
 - (void)reportTemplateProcessingFinished;
@@ -40,27 +40,37 @@
 
 
 @implementation MGTemplateEngine
-
+{
+	NSMutableArray *_openBlocksStack;
+	NSMutableDictionary *_globals;
+	int _outputDisabledCount;
+	int _templateLength;
+	NSMutableDictionary *_filters;
+	NSMutableDictionary *_markers;
+	NSMutableDictionary *_templateVariables;
+	BOOL _literal;
+}
 
 #pragma mark Creation and destruction
 
 
-+ (NSString *)version
++ (NSString *)engineVersion
 {
 	// 1.0.0	20 May 2008
-	return @"1.0.0";
+	// 1.0.1     9 Feb 2014
+	return @"1.0.1";
 }
 
 
 + (MGTemplateEngine *)templateEngine
 {
-	return [[[MGTemplateEngine alloc] init] autorelease];
+	return [[MGTemplateEngine alloc] init];
 }
 
 
 - (id)init
 {
-	if (self = [super init]) {
+	if ((self = [super init])) {
 		_openBlocksStack = [[NSMutableArray alloc] init];
 		_globals = [[NSMutableDictionary alloc] init];
 		_markers = [[NSMutableDictionary alloc] init];
@@ -76,40 +86,12 @@
 		self.literalEndMarker = DEFAULT_LITERAL_END;
 		
 		// Load standard markers and filters.
-		[self loadMarker:[[[MGTemplateStandardMarkers alloc] initWithTemplateEngine:self] autorelease]];
-		[self loadFilter:[[[MGTemplateStandardFilters alloc] init] autorelease]];
+		[self loadMarker:[[MGTemplateStandardMarkers alloc] initWithTemplateEngine:self]];
+		[self loadFilter:[[MGTemplateStandardFilters alloc] init]];
 	}
 	
 	return self;
 }
-
-
-- (void)dealloc
-{
-	[_openBlocksStack release];
-	_openBlocksStack = nil;
-	[_globals release];
-	_globals = nil;
-	[_filters release];
-	_filters = nil;
-	[_markers release];
-	_markers = nil;
-	self.delegate = nil;
-	[templateContents release];
-	templateContents = nil;
-	[_templateVariables release];
-	_templateVariables = nil;
-	self.markerStartDelimiter = nil;
-	self.markerEndDelimiter = nil;
-	self.expressionStartDelimiter = nil;
-	self.expressionEndDelimiter = nil;
-	self.filterDelimiter = nil;
-	self.literalStartMarker = nil;
-	self.literalEndMarker = nil;
-	
-	[super dealloc];
-}
-
 
 #pragma mark Managing persistent values.
 
@@ -135,14 +117,14 @@
 #pragma mark Configuration and extensibility.
 
 
-- (void)loadMarker:(NSObject <MGTemplateMarker> *)marker
+- (void)loadMarker:(id<MGTemplateMarker>)marker
 {
 	if (marker) {
 		// Obtain claimed markers.
 		NSArray *markers = [marker markers];
 		if (markers) {
 			for (NSString *markerName in markers) {
-				NSObject *existingHandler = [_markers objectForKey:markerName];
+				id<MGTemplateMarker> existingHandler = [_markers objectForKey:markerName];
 				if (!existingHandler) {
 					// Set this MGTemplateMaker instance as the handler for markerName.
 					[_markers setObject:marker forKey:markerName];
@@ -153,14 +135,14 @@
 }
 
 
-- (void)loadFilter:(NSObject <MGTemplateFilter> *)filter
+- (void)loadFilter:(id<MGTemplateFilter>)filter
 {
 	if (filter) {
 		// Obtain claimed filters.
 		NSArray *filters = [filter filters];
 		if (filters) {
 			for (NSString *filterName in filters) {
-				NSObject *existingHandler = [_filters objectForKey:filterName];
+				id<MGTemplateFilter> existingHandler = [_filters objectForKey:filterName];
 				if (!existingHandler) {
 					// Set this MGTemplateFilter instance as the handler for filterName.
 					[_filters setObject:filter forKey:filterName];
@@ -176,20 +158,19 @@
 
 - (void)reportError:(NSString *)errorStr code:(int)code continuing:(BOOL)continuing
 {
+	id<MGTemplateEngineDelegate> __strong delegate = self.delegate;
+	
 	if (delegate) {
 		NSString *errStr = NSLocalizedString(errorStr, nil);
 		if (!continuing) {
 			errStr = [NSString stringWithFormat:@"%@: %@", NSLocalizedString(@"Fatal Error", nil), errStr];
 		}
-		SEL selector = @selector(templateEngine:encounteredError:isContinuing:);
-		if ([(NSObject *)delegate respondsToSelector:selector]) {
-			NSError *error = [NSError errorWithDomain:TEMPLATE_ENGINE_ERROR_DOMAIN 
-												 code:code 
-											 userInfo:[NSDictionary dictionaryWithObject:errStr 
-																				  forKey:NSLocalizedDescriptionKey]];
-			[(NSObject <MGTemplateEngineDelegate> *)delegate templateEngine:self 
-														   encounteredError:error 
-															   isContinuing:continuing];
+		if ([delegate respondsToSelector:@selector(templateEngine:encounteredError:isContinuing:)]) {
+			NSError *error = [NSError errorWithDomain:TEMPLATE_ENGINE_ERROR_DOMAIN
+									  code:code
+									  userInfo:@{ NSLocalizedDescriptionKey: errStr }];
+			
+			[delegate templateEngine:self encounteredError:error isContinuing:continuing];
 		}
 	}
 }
@@ -197,10 +178,17 @@
 
 - (void)reportBlockBoundaryStarted:(BOOL)started
 {
+	id<MGTemplateEngineDelegate> __strong delegate = self.delegate;
+	
 	if (delegate) {
-		SEL selector = (started) ? @selector(templateEngine:blockStarted:) : @selector(templateEngine:blockEnded:);
-		if ([(NSObject *)delegate respondsToSelector:selector]) {
-			[(NSObject *)delegate performSelector:selector withObject:self withObject:[_openBlocksStack lastObject]];
+		if (started) {
+			if ([delegate respondsToSelector:@selector(templateEngine:blockStarted:)]) {
+				[delegate templateEngine:self blockStarted:_openBlocksStack.lastObject];
+			}
+		} else {
+			if ([delegate respondsToSelector:@selector(templateEngine:blockEnded:)]) {
+				[delegate templateEngine:self blockEnded:_openBlocksStack.lastObject];
+			}
 		}
 	}
 }
@@ -208,11 +196,10 @@
 
 - (void)reportTemplateProcessingFinished
 {
-	if (delegate) {
-		SEL selector = @selector(templateEngineFinishedProcessingTemplate:);
-		if ([(NSObject *)delegate respondsToSelector:selector]) {
-			[(NSObject *)delegate performSelector:selector withObject:self];
-		}
+	id<MGTemplateEngineDelegate> __strong delegate = self.delegate;
+	
+	if (delegate && [delegate respondsToSelector:@selector(templateEngineFinishedProcessingTemplate:)]) {
+		[delegate templateEngineFinishedProcessingTemplate:self];
 	}
 }
 
@@ -220,7 +207,7 @@
 #pragma mark Utilities.
 
 
-- (NSObject *)valueForVariable:(NSString *)var parent:(NSObject **)parent parentKey:(NSString **)parentKey
+- (id)valueForVariable:(NSString *)var parent:(id __autoreleasing *)parent parentKey:(NSString * __autoreleasing *)parentKey
 {
 	// Returns value for given variable-path, and returns by reference the parent object the variable
 	// is contained in, and the key used on that parent object to access the variable.
@@ -229,8 +216,8 @@
 	
 	NSString *dot = @".";
 	NSArray *dotBits = [var componentsSeparatedByString:dot];
-	NSObject *result = nil;
-	NSObject *currObj = nil;
+	id result = nil;
+	id currObj = nil;
 	
 	// Check to see if there's a top-level entry for first part of var in templateVariables.
 	NSString *firstVar = [dotBits objectAtIndex:0];
@@ -243,7 +230,7 @@
 		// Attempt to find firstVar in stack variables.
 		NSEnumerator *stack = [_openBlocksStack reverseObjectEnumerator];
 		NSDictionary *stackFrame = nil;
-		while (stackFrame = [stack nextObject]) {
+		while ((stackFrame = [stack nextObject])) {
 			NSDictionary *vars = [stackFrame objectForKey:BLOCK_VARIABLES_KEY];
 			if (vars && [vars objectForKey:firstVar]) {
 				currObj = vars;
@@ -286,13 +273,13 @@
 		}
 	} else {
 		// Try iterative checking for array indices.
-		int numKeys = [dotBits count];
+		NSUInteger numKeys = [dotBits count];
 		if (numKeys > 1) { // otherwise no point in checking
-			NSObject *thisParent = currObj;
+			id thisParent = currObj;
 			NSString *thisKey = nil;
-			for (int i = 0; i < numKeys; i++) {
+			for (NSUInteger i = 0; i < numKeys; i++) {
 				thisKey = [dotBits objectAtIndex:i];
-				NSObject *newObj = nil;
+				id newObj = nil;
 				@try {
 					newObj = [currObj valueForKeyPath:thisKey];
 				}
@@ -306,9 +293,9 @@
 					NSString *digits;
 					BOOL scanned = [scanner scanCharactersFromSet:numbersSet intoString:&digits];
 					if (scanned && digits && [digits length] > 0) {
-						int index = [digits intValue];
-						if (index >= 0 && index < [((NSArray *)currObj) count]) {
-							newObj = [((NSArray *)currObj) objectAtIndex:index];
+						NSInteger index = (NSInteger)[digits intValue];
+						if (index >= 0 && index < (NSInteger)[(NSArray *)currObj count]) {
+							newObj = [((NSArray *)currObj) objectAtIndex:(NSUInteger)index];
 						}
 					}
 				}
@@ -334,16 +321,16 @@
 }
 
 
-- (void)setValue:(NSObject *)newValue forVariable:(NSString *)var forceCurrentStackFrame:(BOOL)inStackFrame
+- (void)setValue:(id)newValue forVariable:(NSString *)var forceCurrentStackFrame:(BOOL)inStackFrame
 {
-	NSObject *parent = nil;
+	id parent = nil;
 	NSString *parentKey = nil;
-	NSObject *currValue;
+	id currValue;
 	currValue = [self valueForVariable:var parent:&parent parentKey:&parentKey];
 	if (!inStackFrame && currValue && (currValue != newValue)) {
 		// Set new value appropriately.
 		if ([parent isKindOfClass:[NSMutableArray class]]) {
-			[(NSMutableArray *)parent replaceObjectAtIndex:[parentKey intValue] withObject:newValue];
+			[(NSMutableArray *)parent replaceObjectAtIndex:(NSUInteger)[parentKey intValue] withObject:newValue];
 		} else {
 			// Try using setValue:forKey:
 			@try {
@@ -357,7 +344,7 @@
 		// Put the variable into the current block-stack frame, or _templateVariables otherwise.
 		NSMutableDictionary *vars;
 		if ([_openBlocksStack count] > 0) {
-			vars = [[_openBlocksStack lastObject] objectForKey:BLOCK_VARIABLES_KEY];
+			vars = [(NSDictionary *)[_openBlocksStack lastObject] objectForKey:BLOCK_VARIABLES_KEY];
 		} else {
 			vars = _templateVariables;
 		}
@@ -368,11 +355,11 @@
 }
 
 
-- (NSObject *)resolveVariable:(NSString *)var
+- (id)resolveVariable:(NSString *)var
 {
-	NSObject *parent = nil;
+	id parent = nil;
 	NSString *key = nil;
-	NSObject *result = [self valueForVariable:var parent:&parent parentKey:&key];
+	id result = [self valueForVariable:var parent:&parent parentKey:&key];
 	//NSLog(@"var: %@, parent: %@, key: %@, result: %@", var, parent, key, result);
 	return result;
 }
@@ -390,7 +377,6 @@
 - (NSString *)processTemplate:(NSString *)templateString withVariables:(NSDictionary *)variables
 {
 	// Set up environment.
-	[_openBlocksStack release];
 	_openBlocksStack = [[NSMutableArray alloc] init];
 	[_globals setObject:[NSDictionary dictionaryWithObjectsAndKeys:
 						 [NSDictionary dictionaryWithObjectsAndKeys:
@@ -409,37 +395,35 @@
 	[_globals setObject:[NSNumber numberWithBool:YES] forKey:@"yes"];
 	[_globals setObject:[NSNumber numberWithBool:NO] forKey:@"no"];
 	_outputDisabledCount = 0;
-	[templateContents release];
-	templateContents = [templateString retain];
-	_templateLength = [templateString length];
-	[_templateVariables release];
+	_templateContents = templateString;
+	_templateLength = (NSInteger)[templateString length];
 	_templateVariables = [variables deepMutableCopy];
-	remainingRange = NSMakeRange(0, [templateString length]);
+	_remainingRange = NSMakeRange(0, [templateString length]);
 	_literal = NO;
 	
 	// Ensure we have a matcher.
-	if (!matcher) {
+	if (!_matcher) {
 		[self reportError:@"No matcher has been configured for the template engine" code:7 continuing:NO];
 		return nil;
 	}
 	
 	// Tell our matcher to take note of our settings.
-	[matcher engineSettingsChanged];
+	[_matcher engineSettingsChanged];
 	NSMutableString *output = [NSMutableString string];
 	
-	while (remainingRange.location != NSNotFound) {
-		NSDictionary *matchInfo = [matcher firstMarkerWithinRange:remainingRange];
+	while (_remainingRange.location != NSNotFound) {
+		NSDictionary *matchInfo = [_matcher firstMarkerWithinRange:_remainingRange];
 		if (matchInfo) {
 			// Append output before marker if appropriate.
 			NSRange matchRange = [[matchInfo objectForKey:MARKER_RANGE_KEY] rangeValue];
 			if (_outputDisabledCount == 0) {
-				NSRange preMarkerRange = NSMakeRange(remainingRange.location, matchRange.location - remainingRange.location);
-				[output appendFormat:@"%@", [templateContents substringWithRange:preMarkerRange]];
+				NSRange preMarkerRange = NSMakeRange(_remainingRange.location, matchRange.location - _remainingRange.location);
+				[output appendFormat:@"%@", [_templateContents substringWithRange:preMarkerRange]];
 			}
 			
 			// Adjust remainingRange.
-			remainingRange.location = NSMaxRange(matchRange);
-			remainingRange.length = _templateLength - remainingRange.location;
+			_remainingRange.location = NSMaxRange(matchRange);
+			_remainingRange.length = (NSUInteger)((NSInteger)_templateLength - (NSInteger)_remainingRange.location);
 			
 			// Process the marker we found.
 			//NSLog(@"Match: %@", matchInfo);
@@ -449,7 +433,7 @@
 			if ([matchMarker isEqualToString:self.literalStartMarker]) {
 				if (_literal && _outputDisabledCount == 0) {
 					// Output this tag literally.
-					[output appendFormat:@"%@", [templateContents substringWithRange:matchRange]];
+					[output appendFormat:@"%@", [_templateContents substringWithRange:matchRange]];
 				} else {
 					// Enable literal mode.
 					_literal = YES;
@@ -460,14 +444,14 @@
 				_literal = NO;
 				continue;
 			} else if (_literal && _outputDisabledCount == 0) {
-				[output appendFormat:@"%@", [templateContents substringWithRange:matchRange]];
+				[output appendFormat:@"%@", [_templateContents substringWithRange:matchRange]];
 				continue;
 			}
 			
 			// Check to see if the match is a marker.
 			BOOL isMarker = [[matchInfo objectForKey:MARKER_TYPE_KEY] isEqualToString:MARKER_TYPE_MARKER];
-			NSObject <MGTemplateMarker> *markerHandler = nil;
-			NSObject *val = nil;
+			id<MGTemplateMarker> markerHandler = nil;
+			id val = nil;
 			if (isMarker) {
 				markerHandler = [_markers objectForKey:matchMarker];
 				
@@ -476,7 +460,7 @@
 				BOOL blockEnded = NO;
 				BOOL outputEnabled = (_outputDisabledCount == 0);
 				BOOL outputWasEnabled = outputEnabled;
-				NSRange nextRange = remainingRange;
+				NSRange nextRange = _remainingRange;
 				NSDictionary *newVariables = nil;
 				NSDictionary *blockInfo = nil;
 				
@@ -504,10 +488,10 @@
 						_outputDisabledCount++;
 					}
 				}
-				remainingRange = nextRange;
+				_remainingRange = nextRange;
 				
 				// Check to see if remainingRange is valid.
-				if (NSMaxRange(remainingRange) > [self.templateContents length]) {
+				if (NSMaxRange(_remainingRange) > [self.templateContents length]) {
 					[self reportError:[NSString stringWithFormat:@"Marker handler \"%@\" specified an invalid range to resume processing from", 
 									   matchMarker] 
 								 code:5 continuing:NO];
@@ -550,7 +534,7 @@
 				} else if (blockEnded) {
 					if (!blockInfo || 
 						([_openBlocksStack count] > 0 && 
-						 ![(NSArray *)[[_openBlocksStack lastObject] objectForKey:BLOCK_END_NAMES_KEY] containsObject:matchMarker])) {
+						 ![(NSArray *)[(NSDictionary *)[_openBlocksStack lastObject] objectForKey:BLOCK_END_NAMES_KEY] containsObject:matchMarker])) {
 						// The marker-handler just told us a block ended, but the current block was not
 						// started by that marker-handler. This means a syntax error exists in the template,
 						// specifically an unterminated block (the current block).
@@ -560,7 +544,7 @@
 							errMsg = [NSString stringWithFormat:@"Marker \"%@\" reported that a non-existent block ended", 
 									  matchMarker];
 						} else {
-							NSString *currBlockName = [[_openBlocksStack lastObject] objectForKey:BLOCK_NAME_KEY];
+							NSString *currBlockName = [(NSDictionary *)[_openBlocksStack lastObject] objectForKey:BLOCK_NAME_KEY];
 							errMsg = [NSString stringWithFormat:@"Marker \"%@\" reported that a block ended, \
 but current block was started by \"%@\" marker", 
 									  matchMarker, currBlockName];
@@ -596,7 +580,7 @@ but current block was started by \"%@\" marker",
 				// Process filter if specified.
 				NSString *filter = [matchInfo objectForKey:MARKER_FILTER_KEY];
 				if (filter) {
-					NSObject <MGTemplateFilter> *filterHandler = [_filters objectForKey:filter];
+					id<MGTemplateFilter> filterHandler = [_filters objectForKey:filter];
 					if (filterHandler) {
 						val = [filterHandler filterInvoked:filter 
 											 withArguments:[matchInfo objectForKey:MARKER_FILTER_ARGUMENTS_KEY] onValue:val];
@@ -614,11 +598,11 @@ but current block was started by \"%@\" marker",
 		} else {
 			// Append output to end of template.
 			if (_outputDisabledCount == 0) {
-				[output appendFormat:@"%@", [templateContents substringWithRange:remainingRange]];
+				[output appendFormat:@"%@", [_templateContents substringWithRange:_remainingRange]];
 			}
 			
 			// Check to see if there are open blocks left over.
-			int openBlocks = [_openBlocksStack count];
+			NSUInteger openBlocks = [_openBlocksStack count];
 			if (openBlocks > 0) {
 				NSString *errMsg = [NSString stringWithFormat:@"Finished processing template, but %d %@ left open (%@).", 
 									openBlocks, 
@@ -628,7 +612,7 @@ but current block was started by \"%@\" marker",
 			}
 			
 			// Ensure we terminate the loop.
-			remainingRange.location = NSNotFound;
+			_remainingRange.location = NSNotFound;
 		}
 	}
 	
@@ -655,19 +639,5 @@ but current block was started by \"%@\" marker",
 
 
 #pragma mark Properties
-
-
-@synthesize markerStartDelimiter;
-@synthesize markerEndDelimiter;
-@synthesize expressionStartDelimiter;
-@synthesize expressionEndDelimiter;
-@synthesize filterDelimiter;
-@synthesize literalStartMarker;
-@synthesize literalEndMarker;
-@synthesize remainingRange;
-@synthesize delegate;
-@synthesize matcher;
-@synthesize templateContents;
-
 
 @end

@@ -8,14 +8,7 @@
 #import "MGTemplateEngine.h"
 #import "MGTemplateMarker.h"
 
-@interface MGTemplateStandardMarkers : NSObject <MGTemplateMarker> {
-	MGTemplateEngine *engine; // weak ref
-	NSMutableArray *forStack;
-	NSMutableArray *sectionStack;
-	NSMutableArray *ifStack;
-	NSMutableArray *commentStack;
-	NSMutableDictionary *cycles;
-}
+@interface MGTemplateStandardMarkers : NSObject <MGTemplateMarker>
 
 - (BOOL)currentBlock:(NSDictionary *)blockInfo matchesTopOfStack:(NSMutableArray *)stack;
 - (BOOL)argIsNumeric:(NSString *)arg intValue:(int *)val checkVariables:(BOOL)checkVars;

@@ -1,6 +1,5 @@
 MGTemplateEngine - Writing your own Matchers
-
-
+--------------------------------------------
 
 Important considerations
 ------------------------
@@ -19,21 +18,19 @@ Furthermore, a policy of splitting arguments around whitespace will not work pro
 
 For these reasons, writing your own matcher is a reasonably complex business. Be certain that the standard matchers don't fit your needs before embarking on writing your own!
 
-
-
 The MGTemplateMatcher protocol
 ------------------------------
 
 The matcher protocol is very simple, and all methods are required:
 
-- (id)initWithTemplateEngine:(MGTemplateEngine *)engine;
-- (void)engineSettingsChanged;
-- (NSDictionary *)firstMarkerWithinRange:(NSRange)range;
+    - (id)initWithTemplateEngine:(MGTemplateEngine *)engine;
+    - (void)engineSettingsChanged;
+    - (NSDictionary *)firstMarkerWithinRange:(NSRange)range;
 
 The first method is an initializer giving a reference to the MGTemplateEngine using the matcher. You should keep the engine as a weak reference, to avoid retain cycles.
 
 The second method is called at least once before each template is processed, giving you a chance to cache any engine settings of interest, for performance reasons. This is a good place to cache the marker-delimiters, expression-delimiters, filter-delimiter, and perhaps the template string. See the default matchers for an example.
 
-The third method is where the action happens. You'll be given a range within the template string, and are expected to return either nil for no match, or an NSDictionary containing information about the next match. You are strongly advised to carefully inspect the code of the default matchers to see how this works. You can see a list of all the keys which should be present in this dictionary (along with explanations) in the MGTemplateEngine.h file.
+The third method is where the action happens. You'll be given a range within the template string, and are expected to return either `nil` for no match, or an `NSDictionary` containing information about the next match. You are strongly advised to carefully inspect the code of the default matchers to see how this works. You can see a list of all the keys which should be present in this dictionary (along with explanations) in the `MGTemplateEngine.h` file.
 
 Once again, refer to the code for the default matchers for an example implementation of the protocol. If you create a useful new matcher, please contact me and I'll happily include it in the MGTemplateEngine distribution.
