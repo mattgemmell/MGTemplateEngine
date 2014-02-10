@@ -7,11 +7,9 @@
 
 #import "NSDictionary_DeepMutableCopy.h"
 
-
 @implementation NSDictionary (DeepMutableCopy)
 
-
-- (NSMutableDictionary *)deepMutableCopy;
+- (NSMutableDictionary *)deepMutableCopy
 {
     NSMutableDictionary *newDictionary;
     NSEnumerator *keyEnumerator;
@@ -26,11 +24,9 @@
         if ([anObject respondsToSelector:@selector(deepMutableCopy)]) {
             anObject = [anObject deepMutableCopy];
             [newDictionary setObject:anObject forKey:aKey];
-            [anObject release];
         } else if ([anObject respondsToSelector:@selector(mutableCopyWithZone:)]) {
             anObject = [anObject mutableCopyWithZone:nil];
             [newDictionary setObject:anObject forKey:aKey];
-            [anObject release];
         } else {
 			[newDictionary setObject:anObject forKey:aKey];
 		}
@@ -38,6 +34,5 @@
 	
     return newDictionary;
 }
-
 
 @end

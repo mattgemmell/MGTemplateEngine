@@ -6,67 +6,51 @@
 //
 
 #import "ICUTemplateMatcher.h"
-#import "RegexKitLite.h"
-
 
 @implementation ICUTemplateMatcher
 
-
 + (ICUTemplateMatcher *)matcherWithTemplateEngine:(MGTemplateEngine *)theEngine
 {
-	return [[[ICUTemplateMatcher alloc] initWithTemplateEngine:theEngine] autorelease];
+	return [[ICUTemplateMatcher alloc] initWithTemplateEngine:theEngine];
 }
-
 
 - (id)initWithTemplateEngine:(MGTemplateEngine *)theEngine
 {
-	if (self = [super init]) {
+	if ((self = [super init])) {
 		self.engine = theEngine; // weak ref
 	}
 	
 	return self;
 }
 
-
-- (void)dealloc
-{
-	self.engine = nil;
-	self.templateString = nil;
-	self.markerStart = nil;
-	self.markerEnd = nil;
-	self.exprStart = nil;
-	self.exprEnd = nil;
-	self.filterDelimiter = nil;
-	self.regex = nil;
-	
-	[super dealloc];
-}
-
-
 - (void)engineSettingsChanged
 {
 	// This method is a good place to cache settings from the engine.
-	self.markerStart = engine.markerStartDelimiter;
-	self.markerEnd = engine.markerEndDelimiter;
-	self.exprStart = engine.expressionStartDelimiter;
-	self.exprEnd = engine.expressionEndDelimiter;
-	self.filterDelimiter = engine.filterDelimiter;
-	self.templateString = engine.templateContents;
+	self.markerStart = _engine.markerStartDelimiter;
+	self.markerEnd = _engine.markerEndDelimiter;
+	self.exprStart = _engine.expressionStartDelimiter;
+	self.exprEnd = _engine.expressionEndDelimiter;
+	self.filterDelimiter = _engine.filterDelimiter;
+	self.templateString = _engine.templateContents;
 	
 	// Note: the \Q ... \E syntax causes everything inside it to be treated as literals.
 	// This help us in the case where the marker/filter delimiters have special meaning 
 	// in regular expressions; notably the "$" character in the default marker start-delimiter.
 	// Note: the (?m) syntax makes ICU enable multiline matching.
+	_Pragma("clang diagnostic push");
+	_Pragma("clang diagnostic ignored \"-Wformat-nonliteral\"");
 	NSString *basePattern = @"(\\Q%@\\E)(?:\\s+)?(.*?)(?:(?:\\s+)?\\Q%@\\E(?:\\s+)?(.*?))?(?:\\s+)?\\Q%@\\E";
 	NSString *mrkrPattern = [NSString stringWithFormat:basePattern, self.markerStart, self.filterDelimiter, self.markerEnd];
 	NSString *exprPattern = [NSString stringWithFormat:basePattern, self.exprStart, self.filterDelimiter, self.exprEnd];
+	_Pragma("clang diagnostic pop");
 	self.regex = [NSString stringWithFormat:@"(?m)(?:%@|%@)", mrkrPattern, exprPattern];
 }
 
-
 - (NSDictionary *)firstMarkerWithinRange:(NSRange)range
 {
-	NSRange matchRange = [self.templateString rangeOfRegex:self.regex options:RKLNoOptions inRange:range capture:0 error:NULL];
+	NSRegularExpression *expr = [NSRegularExpression regularExpressionWithPattern:self.regex options:0 error:NULL];
+	NSTextCheckingResult *result = [expr firstMatchInString:self.templateString options:0 range:range];
+	NSRange matchRange = [result rangeAtIndex:0];
 	NSMutableDictionary *markerInfo = nil;
 	if (matchRange.length > 0) {
 		markerInfo = [NSMutableDictionary dictionary];
@@ -75,11 +59,12 @@
 		// Found a match. Obtain marker string.
 		NSString *matchString = [self.templateString substringWithRange:matchRange];
 		NSRange localRange = NSMakeRange(0, [matchString length]);
+		NSTextCheckingResult *localResult = [expr firstMatchInString:matchString options:0 range:localRange];
 		//NSLog(@"mtch: \"%@\"", matchString);
 		
 		// Find type of match
 		NSString *matchType = nil;
-		NSRange mrkrSubRange = [matchString rangeOfRegex:regex options:RKLNoOptions inRange:localRange capture:1 error:NULL];
+		NSRange mrkrSubRange = [localResult rangeAtIndex:1];
 		BOOL isMarker = (mrkrSubRange.length > 0); // only matches if match has marker-delimiters
 		int offset = 0;
 		if (isMarker) {
@@ -92,14 +77,14 @@
 		
 		// Split marker string into marker-name and arguments.
 		NSRange markerRange = NSMakeRange(0, [matchString length]);
-		markerRange = [matchString rangeOfRegex:regex options:RKLNoOptions inRange:localRange capture:2 + offset error:NULL];
+		markerRange = [localResult rangeAtIndex:(NSUInteger)(2 + offset)];
 		
 		if (markerRange.length > 0) {
 			NSString *markerString = [matchString substringWithRange:markerRange];
 			NSArray *markerComponents = [self argumentsFromString:markerString];
 			if (markerComponents && [markerComponents count] > 0) {
 				[markerInfo setObject:[markerComponents objectAtIndex:0] forKey:MARKER_NAME_KEY];
-				int count = [markerComponents count];
+				NSUInteger count = [markerComponents count];
 				if (count > 1) {
 					[markerInfo setObject:[markerComponents subarrayWithRange:NSMakeRange(1, count - 1)] 
 								   forKey:MARKER_ARGUMENTS_KEY];
@@ -107,7 +92,7 @@
 			}
 			
 			// Check for filter.
-			NSRange filterRange = [matchString rangeOfRegex:regex options:RKLNoOptions inRange:localRange capture:3 + offset error:NULL];
+			NSRange filterRange = [localResult rangeAtIndex:(NSUInteger)(3 + offset)];
 			if (filterRange.length > 0) {
 				// Found a filter. Obtain filter string.
 				NSString *filterString = [matchString substringWithRange:filterRange];
@@ -115,8 +100,9 @@
 				// Convert first : plus any immediately-following whitespace into a space.
 				localRange = NSMakeRange(0, [filterString length]);
 				NSString *space = @" ";
-				NSRange filterArgDelimRange = [filterString rangeOfRegex:@":(?:\\s+)?" options:RKLNoOptions inRange:localRange 
-																 capture:0 error:NULL];
+				NSRegularExpression *delimExpr = [NSRegularExpression regularExpressionWithPattern:@":(?:\\s+)?" options:0 error:NULL];
+				NSTextCheckingResult *delimResult = [delimExpr firstMatchInString:filterString options:0 range:localRange];
+				NSRange filterArgDelimRange = [delimResult range];
 				if (filterArgDelimRange.length > 0) {
 					// Replace found text with space.
 					filterString = [NSString stringWithFormat:@"%@%@%@", 
@@ -130,7 +116,7 @@
 				NSArray *filterComponents = [self argumentsFromString:filterString];
 				if (filterComponents && [filterComponents count] > 0) {
 					[markerInfo setObject:[filterComponents objectAtIndex:0] forKey:MARKER_FILTER_KEY];
-					int count = [filterComponents count];
+					NSUInteger count = [filterComponents count];
 					if (count > 1) {
 						[markerInfo setObject:[filterComponents subarrayWithRange:NSMakeRange(1, count - 1)] 
 									   forKey:MARKER_FILTER_ARGUMENTS_KEY];
@@ -149,21 +135,20 @@
 	// Extract arguments from argString, taking care not to break single- or double-quoted arguments,
 	// including those containing \-escaped quotes.
 	NSString *argsPattern = @"\"(.*?)(?<!\\\\)\"|'(.*?)(?<!\\\\)'|(\\S+)";
+	NSRegularExpression *argsRegex = [NSRegularExpression regularExpressionWithPattern:argsPattern options:0 error:NULL];
 	NSMutableArray *args = [NSMutableArray array];
 	
-	int location = 0;
+	NSUInteger location = 0;
 	while (location != NSNotFound) {
 		NSRange searchRange  = NSMakeRange(location, [argString length] - location);
-		NSRange entireRange = [argString rangeOfRegex:argsPattern options:RKLNoOptions 
-											  inRange:searchRange capture:0 error:NULL];
-		NSRange matchedRange = [argString rangeOfRegex:argsPattern options:RKLNoOptions 
-											   inRange:searchRange capture:1 error:NULL];
+		NSTextCheckingResult *result = [argsRegex firstMatchInString:argString options:0 range:searchRange];
+		NSRange entireRange = [result rangeAtIndex:0], matchedRange = [result rangeAtIndex:1];
+
 		if (matchedRange.length == 0) {
-			matchedRange = [argString rangeOfRegex:argsPattern options:RKLNoOptions 
-										   inRange:searchRange capture:2 error:NULL];
+			matchedRange = [result rangeAtIndex:2];
+
 			if (matchedRange.length == 0) {
-				matchedRange = [argString rangeOfRegex:argsPattern options:RKLNoOptions 
-											   inRange:searchRange capture:3 error:NULL];
+				matchedRange = [result rangeAtIndex:3];
 			}
 		}
 		
@@ -177,16 +162,5 @@
 	
 	return args;
 }
-
-
-@synthesize engine;
-@synthesize markerStart;
-@synthesize markerEnd;
-@synthesize exprStart;
-@synthesize exprEnd;
-@synthesize filterDelimiter;
-@synthesize templateString;
-@synthesize regex;
-
 
 @end

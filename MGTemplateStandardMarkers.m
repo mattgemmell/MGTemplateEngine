@@ -72,11 +72,18 @@
 
 
 @implementation MGTemplateStandardMarkers
-
+{
+	MGTemplateEngine *engine; // weak ref
+	NSMutableArray *forStack;
+	NSMutableArray *sectionStack;
+	NSMutableArray *ifStack;
+	NSMutableArray *commentStack;
+	NSMutableDictionary *cycles;
+}
 
 - (id)initWithTemplateEngine:(MGTemplateEngine *)theEngine
 {
-	if (self = [super init]) {
+	if ((self = [super init])) {
 		engine = theEngine;
 		forStack = [[NSMutableArray alloc] init];
 		sectionStack = [[NSMutableArray alloc] init];
@@ -88,49 +95,31 @@
 }
 
 
-- (void)dealloc
-{
-	engine = nil;
-	[forStack release];
-	forStack = nil;
-	[sectionStack release];
-	sectionStack = nil;
-	[ifStack release];
-	ifStack = nil;
-	[commentStack release];
-	commentStack = nil;
-	[cycles release];
-	cycles = nil;
-	
-	[super dealloc];
-}
-
-
 - (NSArray *)markers
 {
-	return [NSArray arrayWithObjects:
-			FOR_START, FOR_END, 
-			SECTION_START, SECTION_END, 
-			IF_START, ELSE, IF_END, 
-			NOW, 
-			COMMENT_START, COMMENT_END, 
-			LOAD, 
-			CYCLE, 
-			SET, 
-			nil];
+	return @[
+		FOR_START, FOR_END,
+		SECTION_START, SECTION_END,
+		IF_START, ELSE, IF_END,
+		NOW,
+		COMMENT_START, COMMENT_END,
+		LOAD,
+		CYCLE,
+		SET,
+	];
 }
 
 
 - (NSArray *)endMarkersForMarker:(NSString *)marker
 {
 	if ([marker isEqualToString:FOR_START]) {
-		return [NSArray arrayWithObjects:FOR_END, nil];
+		return @[FOR_END];
 	} else if ([marker isEqualToString:SECTION_START]) {
-		return [NSArray arrayWithObjects:SECTION_END, nil];
+		return @[SECTION_END];
 	} else if ([marker isEqualToString:IF_START]) {
-		return [NSArray arrayWithObjects:IF_END, ELSE, nil];
+		return @[IF_END, ELSE];
 	} else if ([marker isEqualToString:COMMENT_START]) {
-		return [NSArray arrayWithObjects:COMMENT_END, nil];
+		return @[COMMENT_END];
 	}
 	return nil;
 }
@@ -139,7 +128,7 @@
 - (NSObject *)markerEncountered:(NSString *)marker withArguments:(NSArray *)args inRange:(NSRange)markerRange 
 				   blockStarted:(BOOL *)blockStarted blockEnded:(BOOL *)blockEnded 
 				  outputEnabled:(BOOL *)outputEnabled nextRange:(NSRange *)nextRange 
-			   currentBlockInfo:(NSDictionary *)blockInfo newVariables:(NSDictionary **)newVariables
+			   currentBlockInfo:(NSDictionary *)blockInfo newVariables:(NSDictionary * __autoreleasing *)newVariables
 {
 	if ([marker isEqualToString:FOR_START]) {
 		if (args && [args count] >= 3) {
@@ -158,7 +147,7 @@
 			BOOL valid = NO;
 			NSString *startArg = [args objectAtIndex:0];
 			NSString *endArg = [args objectAtIndex:2];
-			int startIndex, endIndex;
+			int startIndex = -1, endIndex = -1;
 			if (isRange) {
 				// Check to see if either the arg itself is numeric, or it corresponds to a numeric variable.
 				valid = [self argIsNumeric:startArg intValue:&startIndex checkVariables:YES];
@@ -175,7 +164,7 @@
 				// Check that endArg is a collection.
 				NSObject *obj = [engine resolveVariable:endArg];
 				if (obj && [obj respondsToSelector:@selector(objectEnumerator)] && [obj respondsToSelector:@selector(count)]) {
-					endIndex = [(NSArray *)obj count];
+					endIndex = (NSInteger)[(NSArray *)obj count];
 					if (endIndex > 0) {
 						loopEnumObject = obj;
 						valid = YES;
@@ -261,7 +250,7 @@
 				*blockEnded = YES;
 				return nil;
 			}
-			NSMutableDictionary *loopVars = [[[blockVars objectForKey:FOR_LOOP_VARS] mutableCopy] autorelease];
+			NSMutableDictionary *loopVars = [[blockVars objectForKey:FOR_LOOP_VARS] mutableCopy];
 			BOOL reversed = [[loopVars objectForKey:FOR_REVERSE] boolValue];
 			NSEnumerator *loopEnum = [frame objectForKey:FOR_STACK_ENUMERATOR];
 			NSObject *newEnumValue = nil;
@@ -430,7 +419,7 @@
 		
 	} else if ([marker isEqualToString:ELSE]) {
 		if ([self currentBlock:blockInfo matchesTopOfStack:ifStack]) {
-			NSMutableDictionary *frame = [[ifStack lastObject] objectForKey:IF_VARS];
+			NSMutableDictionary *frame = [(NSDictionary *)[ifStack lastObject] objectForKey:IF_VARS];
 			BOOL elseSeen = [[frame objectForKey:IF_ELSE_SEEN] boolValue];
 			BOOL argTrue = [[frame objectForKey:IF_ARG_TRUE] boolValue];
 			BOOL modifyOutput = [[frame objectForKey:DISABLE_OUTPUT] boolValue];
@@ -449,7 +438,7 @@
 		
 	} else if ([marker isEqualToString:IF_END]) {
 		if ([self currentBlock:blockInfo matchesTopOfStack:ifStack]) {
-			NSMutableDictionary *frame = [[ifStack lastObject] objectForKey:IF_VARS];
+			NSMutableDictionary *frame = [(NSDictionary *)[ifStack lastObject] objectForKey:IF_VARS];
 			BOOL modifyOutput = [[frame objectForKey:DISABLE_OUTPUT] boolValue];
 			if (modifyOutput) {
 				// If we're modifying output, it was enabled when this block started.
@@ -511,11 +500,11 @@
 				if (class && [(id)class isKindOfClass:[NSObject class]]) {
 					if ([class conformsToProtocol:@protocol(MGTemplateFilter)]) {
 						// Instantiate and load filter.
-						NSObject <MGTemplateFilter> *obj = [[[class alloc] init] autorelease];
+						NSObject <MGTemplateFilter> *obj = [[class alloc] init];
 						[engine loadFilter:obj];
 					} else if ([class conformsToProtocol:@protocol(MGTemplateMarker)]) {
 						// Instantiate and load marker.
-						NSObject <MGTemplateMarker> *obj = [[[class alloc] initWithTemplateEngine:engine] autorelease];
+						NSObject <MGTemplateMarker> *obj = [[class alloc] initWithTemplateEngine:engine];
 						[engine loadMarker:obj];
 					}
 				}
@@ -529,13 +518,13 @@
 			NSMutableDictionary *cycle = [cycles objectForKey:rangeKey];
 			if (cycle) {
 				NSArray *vals = [cycle objectForKey:CYCLE_VALUES];
-				int currIndex = [[cycle objectForKey:CYCLE_INDEX] intValue];
+				NSUInteger currIndex = [[cycle objectForKey:CYCLE_INDEX] unsignedIntegerValue];
 				currIndex++;
 				if (currIndex >= [vals count]) {
 					currIndex = 0;
 				}
-				[cycle setObject:[NSNumber numberWithInt:currIndex] forKey:CYCLE_INDEX];
-				return [vals objectAtIndex:currIndex];
+				[cycle setObject:@(currIndex) forKey:CYCLE_INDEX];
+				return [vals objectAtIndex:(NSUInteger)currIndex];
 			} else {
 				// New cycle. Create and output appropriately.
 				cycle = [NSMutableDictionary dictionaryWithCapacity:2];
@@ -621,13 +610,9 @@
 - (void)engineFinishedProcessingTemplate
 {
 	// Clean up stacks etc.
-	[forStack release];
 	forStack = [[NSMutableArray alloc] init];
-	[sectionStack release];
 	sectionStack = [[NSMutableArray alloc] init];
-	[ifStack release];
 	ifStack = [[NSMutableArray alloc] init];
-	[commentStack release];
 	commentStack = [[NSMutableArray alloc] init];
 	cycles = [[NSMutableDictionary alloc] init];
 }
