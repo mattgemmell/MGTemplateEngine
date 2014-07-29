@@ -66,7 +66,7 @@
 		NSString *matchType = nil;
 		NSRange mrkrSubRange = [localResult rangeAtIndex:1];
 		BOOL isMarker = (mrkrSubRange.length > 0); // only matches if match has marker-delimiters
-		int offset = 0;
+		NSUInteger offset = 0;
 		if (isMarker) {
 			matchType = MARKER_TYPE_MARKER;
 		} else  {

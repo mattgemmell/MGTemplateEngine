@@ -69,9 +69,9 @@
                 
                 const CGFloat *components = CGColorGetComponents(color);
                 NSString *colorHex = [NSString stringWithFormat:@"%02x%02x%02x",
-                                      (int)(components[0] * 255),
-                                      (int)(components[1] * 255),
-                                      (int)(components[2] * 255)];
+                                      (unsigned int)(components[0] * 255),
+                                      (unsigned int)(components[1] * 255),
+                                      (unsigned int)(components[2] * 255)];
                 return colorHex;
 #else
 				NSColor *color = [(NSColor *)value colorUsingColorSpaceName:NSCalibratedRGBColorSpace];
@@ -79,9 +79,9 @@
 					return @"000000"; // black
 				} else {
 					NSString *colorHex = [NSString stringWithFormat:@"%02x%02x%02x", 
-										  (int)([color redComponent] * 255), 
-										  (int)([color greenComponent] * 255), 
-										  (int)([color blueComponent] * 255)];
+										  (unsigned int)([color redComponent] * 255),
+										  (unsigned int)([color greenComponent] * 255),
+										  (unsigned int)([color blueComponent] * 255)];
 					return colorHex;
 				}
 #endif

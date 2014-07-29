@@ -22,6 +22,14 @@ We also know about {{ YES }} and {{ NO }} or {{ true }} and {{ false }}
 
 Is 1 less than 2? {% if 1 < 2 %} Yes! {% else %} No? {% /if %}
 
+Is 1 less than -2? {% if 1 < -2 %} Yes! {% else %} No? {% /if %}
+
+Is 0 less than 5? {% if 0 < 5 %} Yes! {% else %} No? {% /if %}
+
+Is 0 less than -8908095? {% if 0 < -8908095 %} Yes! {% else %} No? {% /if %}
+
+Is -1289 less than -8908095? {% if -1289 < -8908095 %} Yes! {% else %} No? {% /if %}
+
 {% literal %}This text won't be {% now %} interpreted.{% /literal %}
 
 {% for 1 to 5 %}{{ currentLoop.currentIndex }}{%if currentLoop.currentIndex % 2%}[ODD] {%else%}[EVEN] {%/if%}{% /for %}
