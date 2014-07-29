@@ -147,12 +147,12 @@
 			BOOL valid = NO;
 			NSString *startArg = [args objectAtIndex:0];
 			NSString *endArg = [args objectAtIndex:2];
-			int startIndex = -1, endIndex = -1;
+			NSInteger startIndex = -1, endIndex = -1;
 			if (isRange) {
 				// Check to see if either the arg itself is numeric, or it corresponds to a numeric variable.
-				valid = [self argIsNumeric:startArg intValue:&startIndex checkVariables:YES];
+				valid = [self argIsNumeric:startArg integerValue:&startIndex checkVariables:YES];
 				if (valid) {
-					valid = [self argIsNumeric:endArg intValue:&endIndex checkVariables:YES];
+					valid = [self argIsNumeric:endArg integerValue:&endIndex checkVariables:YES];
 					if (valid) {
 						// Check startIndex and endIndex are sensible.
 						valid = (startIndex <= endIndex);
@@ -164,7 +164,7 @@
 				// Check that endArg is a collection.
 				NSObject *obj = [engine resolveVariable:endArg];
 				if (obj && [obj respondsToSelector:@selector(objectEnumerator)] && [obj respondsToSelector:@selector(count)]) {
-					endIndex = (int)[(NSArray *)obj count];
+					endIndex = (NSInteger)[(NSArray *)obj count];
 					if (endIndex > 0) {
 						loopEnumObject = obj;
 						valid = YES;
@@ -183,7 +183,7 @@
 				[forStack addObject:stackFrame];
 				
 				// Set up variables for the block.
-				int currentIndex = (reversed) ? endIndex : startIndex;
+				NSInteger currentIndex = (reversed) ? endIndex : startIndex;
 				NSMutableDictionary *loopVars = [NSMutableDictionary dictionaryWithObjectsAndKeys:
 												 [NSNumber numberWithInt:startIndex], FOR_LOOP_START_INDEX, 
 												 [NSNumber numberWithInt:endIndex], FOR_LOOP_END_INDEX, 
@@ -254,7 +254,7 @@
 			BOOL reversed = [[loopVars objectForKey:FOR_REVERSE] boolValue];
 			NSEnumerator *loopEnum = [frame objectForKey:FOR_STACK_ENUMERATOR];
 			NSObject *newEnumValue = nil;
-			int currentIndex = [[loopVars objectForKey:FOR_LOOP_CURR_INDEX] intValue];
+			NSInteger currentIndex = [[loopVars objectForKey:FOR_LOOP_CURR_INDEX] integerValue];
 			if (loopEnum) {
 				// Enumerator type.
 				newEnumValue = [loopEnum nextObject];
@@ -264,12 +264,12 @@
 			} else {
 				// Range type.
 				if (reversed) {
-					int minIndex = [[loopVars objectForKey:FOR_LOOP_START_INDEX] intValue];
+					NSInteger minIndex = [[loopVars objectForKey:FOR_LOOP_START_INDEX] integerValue];
 					if (currentIndex > minIndex) {
 						loop = YES;
 					}
 				} else {
-					int maxIndex = [[loopVars objectForKey:FOR_LOOP_END_INDEX] intValue];
+					NSInteger maxIndex = [[loopVars objectForKey:FOR_LOOP_END_INDEX] integerValue];
 					if (currentIndex < maxIndex) {
 						loop = YES;
 					}
@@ -348,10 +348,10 @@
 				NSString *secondArg = [args objectAtIndex:2];
 				BOOL firstTrue = [self argIsTrue:firstArg];
 				BOOL secondTrue = [self argIsTrue:secondArg];
-				int num1, num2;
+				NSInteger num1, num2;
 				BOOL firstNumeric, secondNumeric;
-				firstNumeric = [self argIsNumeric:firstArg intValue:&num1 checkVariables:YES];
-				secondNumeric = [self argIsNumeric:secondArg intValue:&num2 checkVariables:YES];
+				firstNumeric = [self argIsNumeric:firstArg integerValue:&num1 checkVariables:YES];
+				secondNumeric = [self argIsNumeric:secondArg integerValue:&num2 checkVariables:YES];
 				if (!firstNumeric) {
 					num1 = ([engine resolveVariable:firstArg]) ? 1 : 0;
 				}
@@ -580,21 +580,21 @@
 }
 
 
-- (BOOL)argIsNumeric:(NSString *)arg intValue:(int *)val checkVariables:(BOOL)checkVars
+- (BOOL)argIsNumeric:(NSString *)arg integerValue:(NSInteger *)val checkVariables:(BOOL)checkVars
 {
 	BOOL numeric = NO;
-	int value = 0;
+	NSInteger value = 0;
 	
 	if (arg && [arg length] > 0) {
-		if ([[arg substringToIndex:1] isEqualToString:@"0"] || [arg intValue] != 0) {
+		if ([[arg substringToIndex:1] isEqualToString:@"0"] || [arg integerValue] != 0) {
 			numeric = YES;
-			value = [arg intValue];
+			value = [arg integerValue];
 		} else if (checkVars) {
-			// Check to see if arg is a variable with an intValue.
+			// Check to see if arg is a variable with an integerValue.
 			NSObject *argObj = [engine resolveVariable:arg];
 			NSString *argStr = [NSString stringWithFormat:@"%@", argObj];
-			if (argObj && [argObj respondsToSelector:@selector(intValue)] && 
-				[self argIsNumeric:argStr intValue:&value checkVariables:NO]) { // avoid recursion
+			if (argObj && [argObj respondsToSelector:@selector(integerValue)] &&
+				[self argIsNumeric:argStr integerValue:&value checkVariables:NO]) { // avoid recursion
 				numeric = YES;
 			}
 		}

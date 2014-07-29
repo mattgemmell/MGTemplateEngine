@@ -32,7 +32,7 @@
 
 - (id)valueForVariable:(NSString *)var parent:(id *)parent parentKey:(NSString **)parentKey;
 - (void)setValue:(id)newValue forVariable:(NSString *)var forceCurrentStackFrame:(BOOL)inStackFrame;
-- (void)reportError:(NSString *)errorStr code:(int)code continuing:(BOOL)continuing;
+- (void)reportError:(NSString *)errorStr code:(NSInteger)code continuing:(BOOL)continuing;
 - (void)reportBlockBoundaryStarted:(BOOL)started;
 - (void)reportTemplateProcessingFinished;
 
@@ -43,8 +43,8 @@
 {
 	NSMutableArray *_openBlocksStack;
 	NSMutableDictionary *_globals;
-	int _outputDisabledCount;
-	int _templateLength;
+	NSInteger _outputDisabledCount;
+	NSUInteger _templateLength;
 	NSMutableDictionary *_filters;
 	NSMutableDictionary *_markers;
 	NSMutableDictionary *_templateVariables;
@@ -156,7 +156,7 @@
 #pragma mark  Delegate
 
 
-- (void)reportError:(NSString *)errorStr code:(int)code continuing:(BOOL)continuing
+- (void)reportError:(NSString *)errorStr code:(NSInteger)code continuing:(BOOL)continuing
 {
 	id<MGTemplateEngineDelegate> __strong delegate = self.delegate;
 	
@@ -293,7 +293,7 @@
 					NSString *digits;
 					BOOL scanned = [scanner scanCharactersFromSet:numbersSet intoString:&digits];
 					if (scanned && digits && [digits length] > 0) {
-						NSInteger index = (NSInteger)[digits intValue];
+						NSInteger index = [digits integerValue];
 						if (index >= 0 && index < (NSInteger)[(NSArray *)currObj count]) {
 							newObj = [((NSArray *)currObj) objectAtIndex:(NSUInteger)index];
 						}
@@ -330,7 +330,7 @@
 	if (!inStackFrame && currValue && (currValue != newValue)) {
 		// Set new value appropriately.
 		if ([parent isKindOfClass:[NSMutableArray class]]) {
-			[(NSMutableArray *)parent replaceObjectAtIndex:(NSUInteger)[parentKey intValue] withObject:newValue];
+			[(NSMutableArray *)parent replaceObjectAtIndex:(NSUInteger)[parentKey integerValue] withObject:newValue];
 		} else {
 			// Try using setValue:forKey:
 			@try {
@@ -396,7 +396,7 @@
 	[_globals setObject:[NSNumber numberWithBool:NO] forKey:@"no"];
 	_outputDisabledCount = 0;
 	_templateContents = templateString;
-	_templateLength = (int)[templateString length];
+	_templateLength = [templateString length];
 	_templateVariables = [variables deepMutableCopy];
 	_remainingRange = NSMakeRange(0, [templateString length]);
 	_literal = NO;
@@ -423,7 +423,7 @@
 			
 			// Adjust remainingRange.
 			_remainingRange.location = NSMaxRange(matchRange);
-			_remainingRange.length = (NSUInteger)((NSInteger)_templateLength - (NSInteger)_remainingRange.location);
+			_remainingRange.length = (NSUInteger)(_templateLength - _remainingRange.location);
 			
 			// Process the marker we found.
 			//NSLog(@"Match: %@", matchInfo);
