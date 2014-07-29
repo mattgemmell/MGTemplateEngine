@@ -185,10 +185,10 @@
 				// Set up variables for the block.
 				NSInteger currentIndex = (reversed) ? endIndex : startIndex;
 				NSMutableDictionary *loopVars = [NSMutableDictionary dictionaryWithObjectsAndKeys:
-												 [NSNumber numberWithInt:startIndex], FOR_LOOP_START_INDEX, 
-												 [NSNumber numberWithInt:endIndex], FOR_LOOP_END_INDEX, 
-												 [NSNumber numberWithInt:currentIndex], FOR_LOOP_CURR_INDEX, 
-												 [NSNumber numberWithBool:reversed], FOR_REVERSE, 
+												 @(startIndex), FOR_LOOP_START_INDEX,
+												 @(endIndex), FOR_LOOP_END_INDEX,
+												 @(currentIndex), FOR_LOOP_CURR_INDEX,
+												 @(reversed), FOR_REVERSE,
 												 nil];
 				NSMutableDictionary *blockVars = [NSMutableDictionary dictionaryWithObjectsAndKeys:
 												  loopVars, FOR_LOOP_VARS, 
@@ -286,7 +286,7 @@
 				} else {
 					currentIndex++;
 				}
-				[loopVars setObject:[NSNumber numberWithInt:currentIndex] forKey:FOR_LOOP_CURR_INDEX];
+				[loopVars setObject:@(currentIndex) forKey:FOR_LOOP_CURR_INDEX];
 				
 				// Set new val for enumVar if specified
 				NSMutableDictionary *newVars = [NSMutableDictionary dictionaryWithObjectsAndKeys:
