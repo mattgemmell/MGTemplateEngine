@@ -396,7 +396,7 @@
 	[_globals setObject:[NSNumber numberWithBool:NO] forKey:@"no"];
 	_outputDisabledCount = 0;
 	_templateContents = templateString;
-	_templateLength = (NSInteger)[templateString length];
+	_templateLength = (int)[templateString length];
 	_templateVariables = [variables deepMutableCopy];
 	_remainingRange = NSMakeRange(0, [templateString length]);
 	_literal = NO;
@@ -604,8 +604,8 @@ but current block was started by \"%@\" marker",
 			// Check to see if there are open blocks left over.
 			NSUInteger openBlocks = [_openBlocksStack count];
 			if (openBlocks > 0) {
-				NSString *errMsg = [NSString stringWithFormat:@"Finished processing template, but %d %@ left open (%@).", 
-									openBlocks, 
+				NSString *errMsg = [NSString stringWithFormat:@"Finished processing template, but %lu %@ left open (%@).", 
+									(unsigned long)openBlocks,
 									(openBlocks == 1) ? @"block was" : @"blocks were", 
 									[[_openBlocksStack valueForKeyPath:BLOCK_NAME_KEY] componentsJoinedByString:@", "]];
 				[self reportError:errMsg code:6 continuing:YES];
