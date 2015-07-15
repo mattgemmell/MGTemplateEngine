@@ -331,7 +331,7 @@
 		*blockEnded = YES;
 		
 	} else if ([marker isEqualToString:IF_START]) {
-		if (args && ([args count] == 1 || [args count] == 3)) {
+		if (args && ([args count] >= 1 && [args count] <= 3)) {
 			*blockStarted = YES;
 			
 			// Determine appropriate values for outputEnabled and for our if-stack frame.
