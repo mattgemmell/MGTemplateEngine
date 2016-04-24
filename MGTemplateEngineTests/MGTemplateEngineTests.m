@@ -117,6 +117,13 @@
     XCTAssertNil([delegate_ lastError], @"");
 }
 
+- (void) testModByZero {
+    // Ensure we don't get an arithmetic exception.
+    NSString *result = [engine_ processTemplate: @"Mod by zero: {% if 1 % 0 %} shouldn't appear {% else %} didn't crash {% /if %}" withVariables: [NSDictionary dictionary]];
+    XCTAssertEqualObjects(@"Mod by zero:  didn't crash ", result, @"");
+    XCTAssertNil([delegate_ lastError], @"");
+}
+
 - (void) testCompareDifferentStrings {
     NSString *result = 	result = [engine_ processTemplate: @"Is x1 equalsstring x2? {% if x1 equalsstring x2 %} Yes! {% else %} No? {% /if %}"
                                             withVariables: [NSDictionary dictionaryWithObjectsAndKeys: @"x", @"x1", @"x", @"x2", nil]];
