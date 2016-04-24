@@ -8,6 +8,20 @@
 
 /* Begin PBXBuildFile section */
 		1DDD58160DA1D0A300B32029 /* MainMenu.xib in Resources */ = {isa = PBXBuildFile; fileRef = 1DDD58140DA1D0A300B32029 /* MainMenu.xib */; };
+		3E3724C21CCD54FD005628DF /* MGTemplateEngineTests.m in Sources */ = {isa = PBXBuildFile; fileRef = 3E3724911CCD528E005628DF /* MGTemplateEngineTests.m */; };
+		3E3724D11CCD5621005628DF /* MGTemplateEngine.m in Sources */ = {isa = PBXBuildFile; fileRef = C9D870100DE1FD2700F0B62A /* MGTemplateEngine.m */; };
+		3E3724D21CCD5621005628DF /* MGTemplateStandardMarkers.m in Sources */ = {isa = PBXBuildFile; fileRef = C9D870160DE1FD2700F0B62A /* MGTemplateStandardMarkers.m */; };
+		3E3724D31CCD5621005628DF /* MGTemplateStandardFilters.m in Sources */ = {isa = PBXBuildFile; fileRef = C9D870140DE1FD2700F0B62A /* MGTemplateStandardFilters.m */; };
+		3E3724D41CCD5621005628DF /* ICUTemplateMatcher.m in Sources */ = {isa = PBXBuildFile; fileRef = C9D8701E0DE1FD5C00F0B62A /* ICUTemplateMatcher.m */; };
+		3E3724D51CCD5621005628DF /* NSArray_DeepMutableCopy.m in Sources */ = {isa = PBXBuildFile; fileRef = C9D8705E0DE2094000F0B62A /* NSArray_DeepMutableCopy.m */; };
+		3E3724D61CCD5621005628DF /* NSDictionary_DeepMutableCopy.m in Sources */ = {isa = PBXBuildFile; fileRef = C9D870600DE2094000F0B62A /* NSDictionary_DeepMutableCopy.m */; };
+		3E3724D81CCD56E0005628DF /* Info.plist in Resources */ = {isa = PBXBuildFile; fileRef = 3E3724931CCD528E005628DF /* Info.plist */; };
+		3E3724D91CCD576F005628DF /* MGTemplateEngine.m in Sources */ = {isa = PBXBuildFile; fileRef = C9D870100DE1FD2700F0B62A /* MGTemplateEngine.m */; };
+		3E3724DA1CCD576F005628DF /* MGTemplateStandardMarkers.m in Sources */ = {isa = PBXBuildFile; fileRef = C9D870160DE1FD2700F0B62A /* MGTemplateStandardMarkers.m */; };
+		3E3724DB1CCD576F005628DF /* MGTemplateStandardFilters.m in Sources */ = {isa = PBXBuildFile; fileRef = C9D870140DE1FD2700F0B62A /* MGTemplateStandardFilters.m */; };
+		3E3724DC1CCD576F005628DF /* ICUTemplateMatcher.m in Sources */ = {isa = PBXBuildFile; fileRef = C9D8701E0DE1FD5C00F0B62A /* ICUTemplateMatcher.m */; };
+		3E3724DD1CCD576F005628DF /* NSArray_DeepMutableCopy.m in Sources */ = {isa = PBXBuildFile; fileRef = C9D8705E0DE2094000F0B62A /* NSArray_DeepMutableCopy.m */; };
+		3E3724DE1CCD576F005628DF /* NSDictionary_DeepMutableCopy.m in Sources */ = {isa = PBXBuildFile; fileRef = C9D870600DE2094000F0B62A /* NSDictionary_DeepMutableCopy.m */; };
 		8D11072B0486CEB800E47090 /* InfoPlist.strings in Resources */ = {isa = PBXBuildFile; fileRef = 089C165CFE840E0CC02AAC07 /* InfoPlist.strings */; };
 		8D11072D0486CEB800E47090 /* main.m in Sources */ = {isa = PBXBuildFile; fileRef = 29B97316FDCFA39411CA2CEA /* main.m */; settings = {ATTRIBUTES = (); }; };
 		8D11072F0486CEB800E47090 /* Cocoa.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = 1058C7A1FEA54F0111CA2CBB /* Cocoa.framework */; };
@@ -15,16 +29,33 @@
 		C9ABE0C50DE2EBF8009E7BC8 /* Writing Markers.md in Resources */ = {isa = PBXBuildFile; fileRef = C9ABE0C20DE2EBF8009E7BC8 /* Writing Markers.md */; };
 		C9ABE0C60DE2EBF8009E7BC8 /* Writing Matchers.md in Resources */ = {isa = PBXBuildFile; fileRef = C9ABE0C30DE2EBF8009E7BC8 /* Writing Matchers.md */; };
 		C9D8700E0DE1FCFA00F0B62A /* AppController.m in Sources */ = {isa = PBXBuildFile; fileRef = C9D8700D0DE1FCFA00F0B62A /* AppController.m */; };
-		C9D870170DE1FD2700F0B62A /* MGTemplateEngine.m in Sources */ = {isa = PBXBuildFile; fileRef = C9D870100DE1FD2700F0B62A /* MGTemplateEngine.m */; };
-		C9D870180DE1FD2700F0B62A /* MGTemplateStandardFilters.m in Sources */ = {isa = PBXBuildFile; fileRef = C9D870140DE1FD2700F0B62A /* MGTemplateStandardFilters.m */; };
-		C9D870190DE1FD2700F0B62A /* MGTemplateStandardMarkers.m in Sources */ = {isa = PBXBuildFile; fileRef = C9D870160DE1FD2700F0B62A /* MGTemplateStandardMarkers.m */; };
-		C9D8701F0DE1FD5C00F0B62A /* ICUTemplateMatcher.m in Sources */ = {isa = PBXBuildFile; fileRef = C9D8701E0DE1FD5C00F0B62A /* ICUTemplateMatcher.m */; };
 		C9D8704A0DE2007C00F0B62A /* libicucore.dylib in Frameworks */ = {isa = PBXBuildFile; fileRef = C9D870490DE2007C00F0B62A /* libicucore.dylib */; };
-		C9D870610DE2094000F0B62A /* NSArray_DeepMutableCopy.m in Sources */ = {isa = PBXBuildFile; fileRef = C9D8705E0DE2094000F0B62A /* NSArray_DeepMutableCopy.m */; };
-		C9D870620DE2094000F0B62A /* NSDictionary_DeepMutableCopy.m in Sources */ = {isa = PBXBuildFile; fileRef = C9D870600DE2094000F0B62A /* NSDictionary_DeepMutableCopy.m */; };
 		C9D870E20DE20D9D00F0B62A /* sample_template.txt in Resources */ = {isa = PBXBuildFile; fileRef = C9D870E10DE20D9D00F0B62A /* sample_template.txt */; };
 		C9D871840DE21DBE00F0B62A /* Source Code License.rtf in Resources */ = {isa = PBXBuildFile; fileRef = C9D871830DE21DBE00F0B62A /* Source Code License.rtf */; };
 /* End PBXBuildFile section */
+
+/* Begin PBXContainerItemProxy section */
+		3E3724DF1CCD58C2005628DF /* PBXContainerItemProxy */ = {
+			isa = PBXContainerItemProxy;
+			containerPortal = 29B97313FDCFA39411CA2CEA /* Project object */;
+			proxyType = 1;
+			remoteGlobalIDString = 8D1107260486CEB800E47090;
+			remoteInfo = MGTemplateEngine;
+		};
+/* End PBXContainerItemProxy section */
+
+/* Begin PBXCopyFilesBuildPhase section */
+		3E3724BE1CCD54D5005628DF /* Embed Frameworks */ = {
+			isa = PBXCopyFilesBuildPhase;
+			buildActionMask = 2147483647;
+			dstPath = "";
+			dstSubfolderSpec = 10;
+			files = (
+			);
+			name = "Embed Frameworks";
+			runOnlyForDeploymentPostprocessing = 0;
+		};
+/* End PBXCopyFilesBuildPhase section */
 
 /* Begin PBXFileReference section */
 		089C165DFE840E0CC02AAC07 /* English */ = {isa = PBXFileReference; fileEncoding = 10; lastKnownFileType = text.plist.strings; name = English; path = English.lproj/InfoPlist.strings; sourceTree = "<group>"; };
@@ -35,6 +66,10 @@
 		29B97324FDCFA39411CA2CEA /* AppKit.framework */ = {isa = PBXFileReference; lastKnownFileType = wrapper.framework; name = AppKit.framework; path = /System/Library/Frameworks/AppKit.framework; sourceTree = "<absolute>"; };
 		29B97325FDCFA39411CA2CEA /* Foundation.framework */ = {isa = PBXFileReference; lastKnownFileType = wrapper.framework; name = Foundation.framework; path = /System/Library/Frameworks/Foundation.framework; sourceTree = "<absolute>"; };
 		32CA4F630368D1EE00C91783 /* MGTemplateEngine_Prefix.pch */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = MGTemplateEngine_Prefix.pch; sourceTree = "<group>"; };
+		3E3724911CCD528E005628DF /* MGTemplateEngineTests.m */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.objc; path = MGTemplateEngineTests.m; sourceTree = "<group>"; };
+		3E3724931CCD528E005628DF /* Info.plist */ = {isa = PBXFileReference; lastKnownFileType = text.plist.xml; path = Info.plist; sourceTree = "<group>"; };
+		3E3724AD1CCD54D5005628DF /* MGTemplateEngineTests.xctest */ = {isa = PBXFileReference; explicitFileType = wrapper.cfbundle; includeInIndex = 0; path = MGTemplateEngineTests.xctest; sourceTree = BUILT_PRODUCTS_DIR; };
+		3E3724C91CCD5541005628DF /* libicucore.tbd */ = {isa = PBXFileReference; lastKnownFileType = "sourcecode.text-based-dylib-definition"; name = libicucore.tbd; path = usr/lib/libicucore.tbd; sourceTree = SDKROOT; };
 		8D1107310486CEB800E47090 /* Info.plist */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = text.plist.xml; path = Info.plist; sourceTree = "<group>"; };
 		8D1107320486CEB800E47090 /* MGTemplateEngine.app */ = {isa = PBXFileReference; explicitFileType = wrapper.application; includeInIndex = 0; path = MGTemplateEngine.app; sourceTree = BUILT_PRODUCTS_DIR; };
 		C9ABE0C10DE2EBF8009E7BC8 /* Writing Filters.md */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = text; path = "Writing Filters.md"; sourceTree = "<group>"; };
@@ -64,6 +99,13 @@
 /* End PBXFileReference section */
 
 /* Begin PBXFrameworksBuildPhase section */
+		3E3724AA1CCD54D5005628DF /* Frameworks */ = {
+			isa = PBXFrameworksBuildPhase;
+			buildActionMask = 2147483647;
+			files = (
+			);
+			runOnlyForDeploymentPostprocessing = 0;
+		};
 		8D11072E0486CEB800E47090 /* Frameworks */ = {
 			isa = PBXFrameworksBuildPhase;
 			buildActionMask = 2147483647;
@@ -110,6 +152,7 @@
 			isa = PBXGroup;
 			children = (
 				8D1107320486CEB800E47090 /* MGTemplateEngine.app */,
+				3E3724AD1CCD54D5005628DF /* MGTemplateEngineTests.xctest */,
 			);
 			name = Products;
 			sourceTree = "<group>";
@@ -123,6 +166,7 @@
 				080E96DDFE201D6D7F000001 /* Classes */,
 				29B97315FDCFA39411CA2CEA /* Other Sources */,
 				29B97317FDCFA39411CA2CEA /* Resources */,
+				3E3724901CCD528E005628DF /* MGTemplateEngineTests */,
 				29B97323FDCFA39411CA2CEA /* Frameworks */,
 				19C28FACFE9D520D11CA2CBB /* Products */,
 			);
@@ -151,10 +195,20 @@
 		29B97323FDCFA39411CA2CEA /* Frameworks */ = {
 			isa = PBXGroup;
 			children = (
+				3E3724C91CCD5541005628DF /* libicucore.tbd */,
 				1058C7A0FEA54F0111CA2CBB /* Linked Frameworks */,
 				1058C7A2FEA54F0111CA2CBB /* Other Frameworks */,
 			);
 			name = Frameworks;
+			sourceTree = "<group>";
+		};
+		3E3724901CCD528E005628DF /* MGTemplateEngineTests */ = {
+			isa = PBXGroup;
+			children = (
+				3E3724911CCD528E005628DF /* MGTemplateEngineTests.m */,
+				3E3724931CCD528E005628DF /* Info.plist */,
+			);
+			path = MGTemplateEngineTests;
 			sourceTree = "<group>";
 		};
 		C9ABE0BF0DE2EBE3009E7BC8 /* Extensibility Docs */ = {
@@ -216,6 +270,24 @@
 /* End PBXGroup section */
 
 /* Begin PBXNativeTarget section */
+		3E3724AC1CCD54D5005628DF /* MGTemplateEngineTests */ = {
+			isa = PBXNativeTarget;
+			buildConfigurationList = 3E3724BF1CCD54D5005628DF /* Build configuration list for PBXNativeTarget "MGTemplateEngineTests" */;
+			buildPhases = (
+				3E3724A91CCD54D5005628DF /* Sources */,
+				3E3724AA1CCD54D5005628DF /* Frameworks */,
+				3E3724AB1CCD54D5005628DF /* Resources */,
+			);
+			buildRules = (
+			);
+			dependencies = (
+				3E3724E01CCD58C2005628DF /* PBXTargetDependency */,
+			);
+			name = MGTemplateEngineTests;
+			productName = "MGTemplateEngine LibraryTests";
+			productReference = 3E3724AD1CCD54D5005628DF /* MGTemplateEngineTests.xctest */;
+			productType = "com.apple.product-type.bundle.unit-test";
+		};
 		8D1107260486CEB800E47090 /* MGTemplateEngine */ = {
 			isa = PBXNativeTarget;
 			buildConfigurationList = C01FCF4A08A954540054247B /* Build configuration list for PBXNativeTarget "MGTemplateEngine" */;
@@ -223,6 +295,7 @@
 				8D1107290486CEB800E47090 /* Resources */,
 				8D11072C0486CEB800E47090 /* Sources */,
 				8D11072E0486CEB800E47090 /* Frameworks */,
+				3E3724BE1CCD54D5005628DF /* Embed Frameworks */,
 			);
 			buildRules = (
 			);
@@ -241,6 +314,11 @@
 			isa = PBXProject;
 			attributes = {
 				LastUpgradeCheck = 0510;
+				TargetAttributes = {
+					3E3724AC1CCD54D5005628DF = {
+						CreatedOnToolsVersion = 7.2.1;
+					};
+				};
 			};
 			buildConfigurationList = C01FCF4E08A954540054247B /* Build configuration list for PBXProject "MGTemplateEngine" */;
 			compatibilityVersion = "Xcode 3.2";
@@ -254,11 +332,20 @@
 			projectRoot = "";
 			targets = (
 				8D1107260486CEB800E47090 /* MGTemplateEngine */,
+				3E3724AC1CCD54D5005628DF /* MGTemplateEngineTests */,
 			);
 		};
 /* End PBXProject section */
 
 /* Begin PBXResourcesBuildPhase section */
+		3E3724AB1CCD54D5005628DF /* Resources */ = {
+			isa = PBXResourcesBuildPhase;
+			buildActionMask = 2147483647;
+			files = (
+				3E3724D81CCD56E0005628DF /* Info.plist in Resources */,
+			);
+			runOnlyForDeploymentPostprocessing = 0;
+		};
 		8D1107290486CEB800E47090 /* Resources */ = {
 			isa = PBXResourcesBuildPhase;
 			buildActionMask = 2147483647;
@@ -276,22 +363,44 @@
 /* End PBXResourcesBuildPhase section */
 
 /* Begin PBXSourcesBuildPhase section */
+		3E3724A91CCD54D5005628DF /* Sources */ = {
+			isa = PBXSourcesBuildPhase;
+			buildActionMask = 2147483647;
+			files = (
+				3E3724D91CCD576F005628DF /* MGTemplateEngine.m in Sources */,
+				3E3724DA1CCD576F005628DF /* MGTemplateStandardMarkers.m in Sources */,
+				3E3724DB1CCD576F005628DF /* MGTemplateStandardFilters.m in Sources */,
+				3E3724DC1CCD576F005628DF /* ICUTemplateMatcher.m in Sources */,
+				3E3724DD1CCD576F005628DF /* NSArray_DeepMutableCopy.m in Sources */,
+				3E3724DE1CCD576F005628DF /* NSDictionary_DeepMutableCopy.m in Sources */,
+				3E3724C21CCD54FD005628DF /* MGTemplateEngineTests.m in Sources */,
+			);
+			runOnlyForDeploymentPostprocessing = 0;
+		};
 		8D11072C0486CEB800E47090 /* Sources */ = {
 			isa = PBXSourcesBuildPhase;
 			buildActionMask = 2147483647;
 			files = (
+				3E3724D11CCD5621005628DF /* MGTemplateEngine.m in Sources */,
+				3E3724D21CCD5621005628DF /* MGTemplateStandardMarkers.m in Sources */,
+				3E3724D31CCD5621005628DF /* MGTemplateStandardFilters.m in Sources */,
+				3E3724D41CCD5621005628DF /* ICUTemplateMatcher.m in Sources */,
+				3E3724D51CCD5621005628DF /* NSArray_DeepMutableCopy.m in Sources */,
+				3E3724D61CCD5621005628DF /* NSDictionary_DeepMutableCopy.m in Sources */,
 				8D11072D0486CEB800E47090 /* main.m in Sources */,
 				C9D8700E0DE1FCFA00F0B62A /* AppController.m in Sources */,
-				C9D870170DE1FD2700F0B62A /* MGTemplateEngine.m in Sources */,
-				C9D870180DE1FD2700F0B62A /* MGTemplateStandardFilters.m in Sources */,
-				C9D870190DE1FD2700F0B62A /* MGTemplateStandardMarkers.m in Sources */,
-				C9D8701F0DE1FD5C00F0B62A /* ICUTemplateMatcher.m in Sources */,
-				C9D870610DE2094000F0B62A /* NSArray_DeepMutableCopy.m in Sources */,
-				C9D870620DE2094000F0B62A /* NSDictionary_DeepMutableCopy.m in Sources */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};
 /* End PBXSourcesBuildPhase section */
+
+/* Begin PBXTargetDependency section */
+		3E3724E01CCD58C2005628DF /* PBXTargetDependency */ = {
+			isa = PBXTargetDependency;
+			target = 8D1107260486CEB800E47090 /* MGTemplateEngine */;
+			targetProxy = 3E3724DF1CCD58C2005628DF /* PBXContainerItemProxy */;
+		};
+/* End PBXTargetDependency section */
 
 /* Begin PBXVariantGroup section */
 		089C165CFE840E0CC02AAC07 /* InfoPlist.strings */ = {
@@ -313,11 +422,99 @@
 /* End PBXVariantGroup section */
 
 /* Begin XCBuildConfiguration section */
+		3E3724C01CCD54D5005628DF /* Debug */ = {
+			isa = XCBuildConfiguration;
+			buildSettings = {
+				ALWAYS_SEARCH_USER_PATHS = NO;
+				CLANG_CXX_LANGUAGE_STANDARD = "gnu++0x";
+				CLANG_CXX_LIBRARY = "libc++";
+				CLANG_ENABLE_MODULES = YES;
+				CLANG_ENABLE_OBJC_ARC = YES;
+				CLANG_WARN_BOOL_CONVERSION = YES;
+				CLANG_WARN_CONSTANT_CONVERSION = YES;
+				CLANG_WARN_DIRECT_OBJC_ISA_USAGE = YES_ERROR;
+				CLANG_WARN_EMPTY_BODY = YES;
+				CLANG_WARN_ENUM_CONVERSION = YES;
+				CLANG_WARN_INT_CONVERSION = YES;
+				CLANG_WARN_OBJC_ROOT_CLASS = YES_ERROR;
+				CLANG_WARN_UNREACHABLE_CODE = YES;
+				CLANG_WARN__DUPLICATE_METHOD_MATCH = YES;
+				CODE_SIGN_IDENTITY = "-";
+				COMBINE_HIDPI_IMAGES = YES;
+				COPY_PHASE_STRIP = NO;
+				DEBUG_INFORMATION_FORMAT = dwarf;
+				ENABLE_STRICT_OBJC_MSGSEND = YES;
+				ENABLE_TESTABILITY = YES;
+				GCC_C_LANGUAGE_STANDARD = gnu99;
+				GCC_DYNAMIC_NO_PIC = NO;
+				GCC_NO_COMMON_BLOCKS = YES;
+				GCC_PREFIX_HEADER = MGTemplateEngine_Prefix.pch;
+				GCC_PREPROCESSOR_DEFINITIONS = (
+					"DEBUG=1",
+					"$(inherited)",
+				);
+				GCC_WARN_64_TO_32_BIT_CONVERSION = YES;
+				GCC_WARN_ABOUT_RETURN_TYPE = YES_ERROR;
+				GCC_WARN_UNDECLARED_SELECTOR = YES;
+				GCC_WARN_UNINITIALIZED_AUTOS = YES_AGGRESSIVE;
+				GCC_WARN_UNUSED_FUNCTION = YES;
+				INFOPLIST_FILE = MGTemplateEngineTests/Info.plist;
+				LD_RUNPATH_SEARCH_PATHS = "$(inherited) @executable_path/../Frameworks @loader_path/../Frameworks";
+				MACOSX_DEPLOYMENT_TARGET = 10.11;
+				MTL_ENABLE_DEBUG_INFO = YES;
+				PRODUCT_BUNDLE_IDENTIFIER = "none.MGTemplateEngine-Tests";
+				PRODUCT_NAME = "$(TARGET_NAME)";
+				SDKROOT = macosx;
+			};
+			name = Debug;
+		};
+		3E3724C11CCD54D5005628DF /* Release */ = {
+			isa = XCBuildConfiguration;
+			buildSettings = {
+				ALWAYS_SEARCH_USER_PATHS = NO;
+				CLANG_CXX_LANGUAGE_STANDARD = "gnu++0x";
+				CLANG_CXX_LIBRARY = "libc++";
+				CLANG_ENABLE_MODULES = YES;
+				CLANG_ENABLE_OBJC_ARC = YES;
+				CLANG_WARN_BOOL_CONVERSION = YES;
+				CLANG_WARN_CONSTANT_CONVERSION = YES;
+				CLANG_WARN_DIRECT_OBJC_ISA_USAGE = YES_ERROR;
+				CLANG_WARN_EMPTY_BODY = YES;
+				CLANG_WARN_ENUM_CONVERSION = YES;
+				CLANG_WARN_INT_CONVERSION = YES;
+				CLANG_WARN_OBJC_ROOT_CLASS = YES_ERROR;
+				CLANG_WARN_UNREACHABLE_CODE = YES;
+				CLANG_WARN__DUPLICATE_METHOD_MATCH = YES;
+				CODE_SIGN_IDENTITY = "-";
+				COMBINE_HIDPI_IMAGES = YES;
+				COPY_PHASE_STRIP = NO;
+				DEBUG_INFORMATION_FORMAT = "dwarf-with-dsym";
+				ENABLE_NS_ASSERTIONS = NO;
+				ENABLE_STRICT_OBJC_MSGSEND = YES;
+				GCC_C_LANGUAGE_STANDARD = gnu99;
+				GCC_NO_COMMON_BLOCKS = YES;
+				GCC_PREFIX_HEADER = MGTemplateEngine_Prefix.pch;
+				GCC_WARN_64_TO_32_BIT_CONVERSION = YES;
+				GCC_WARN_ABOUT_RETURN_TYPE = YES_ERROR;
+				GCC_WARN_UNDECLARED_SELECTOR = YES;
+				GCC_WARN_UNINITIALIZED_AUTOS = YES_AGGRESSIVE;
+				GCC_WARN_UNUSED_FUNCTION = YES;
+				INFOPLIST_FILE = MGTemplateEngineTests/Info.plist;
+				LD_RUNPATH_SEARCH_PATHS = "$(inherited) @executable_path/../Frameworks @loader_path/../Frameworks";
+				MACOSX_DEPLOYMENT_TARGET = 10.11;
+				MTL_ENABLE_DEBUG_INFO = NO;
+				PRODUCT_BUNDLE_IDENTIFIER = "none.MGTemplateEngine-Tests";
+				PRODUCT_NAME = "$(TARGET_NAME)";
+				SDKROOT = macosx;
+			};
+			name = Release;
+		};
 		C01FCF4B08A954540054247B /* Debug */ = {
 			isa = XCBuildConfiguration;
 			buildSettings = {
 				ALWAYS_SEARCH_USER_PATHS = NO;
 				CLANG_ENABLE_OBJC_ARC = YES;
+				CODE_SIGN_IDENTITY = "-";
 				COMBINE_HIDPI_IMAGES = YES;
 				COPY_PHASE_STRIP = NO;
 				GCC_DYNAMIC_NO_PIC = NO;
@@ -328,6 +525,7 @@
 				GCC_PREFIX_HEADER = MGTemplateEngine_Prefix.pch;
 				INFOPLIST_FILE = Info.plist;
 				INSTALL_PATH = "$(HOME)/Applications";
+				LD_RUNPATH_SEARCH_PATHS = "$(inherited) @executable_path/../Frameworks";
 				PRODUCT_NAME = MGTemplateEngine;
 			};
 			name = Debug;
@@ -337,6 +535,7 @@
 			buildSettings = {
 				ALWAYS_SEARCH_USER_PATHS = NO;
 				CLANG_ENABLE_OBJC_ARC = YES;
+				CODE_SIGN_IDENTITY = "-";
 				COMBINE_HIDPI_IMAGES = YES;
 				DEBUG_INFORMATION_FORMAT = "dwarf-with-dsym";
 				GCC_MODEL_TUNING = G5;
@@ -344,6 +543,7 @@
 				GCC_PREFIX_HEADER = MGTemplateEngine_Prefix.pch;
 				INFOPLIST_FILE = Info.plist;
 				INSTALL_PATH = "$(HOME)/Applications";
+				LD_RUNPATH_SEARCH_PATHS = "$(inherited) @executable_path/../Frameworks";
 				PRODUCT_NAME = MGTemplateEngine;
 			};
 			name = Release;
@@ -373,6 +573,14 @@
 /* End XCBuildConfiguration section */
 
 /* Begin XCConfigurationList section */
+		3E3724BF1CCD54D5005628DF /* Build configuration list for PBXNativeTarget "MGTemplateEngineTests" */ = {
+			isa = XCConfigurationList;
+			buildConfigurations = (
+				3E3724C01CCD54D5005628DF /* Debug */,
+				3E3724C11CCD54D5005628DF /* Release */,
+			);
+			defaultConfigurationIsVisible = 0;
+		};
 		C01FCF4A08A954540054247B /* Build configuration list for PBXNativeTarget "MGTemplateEngine" */ = {
 			isa = XCConfigurationList;
 			buildConfigurations = (
