@@ -377,7 +377,11 @@
 				} else if ([op isEqualToString:@"<="]) {
 					argTrue = (num1 <= num2);
 				} else if ([op isEqualToString:@"\%"]) {
-					argTrue = ((num1 % num2) > 0);
+                    if (num2 == 0) {
+                        argTrue = NO;
+                    } else {
+                        argTrue = ((num1 % num2) > 0);
+                    }
 				} else if ([op isEqualToString:@"equalsstring"] || [op isEqualToString:@"notequalsstring"]) {
 					NSObject *firstVal = [engine resolveVariable:firstArg];
 					NSObject *secondVal = [engine resolveVariable:secondArg];

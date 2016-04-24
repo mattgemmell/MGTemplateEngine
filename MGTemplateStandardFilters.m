@@ -13,6 +13,7 @@
 #define CAPITALIZED		@"capitalized"
 #define DATE_FORMAT		@"date_format"
 #define COLOR_FORMAT	@"color_format"
+#define DEFAULT        @"default"
 
 
 @implementation MGTemplateStandardFilters
@@ -22,10 +23,19 @@
 {
 	return [NSArray arrayWithObjects:
 			UPPERCASE, LOWERCASE, CAPITALIZED, 
-			DATE_FORMAT, COLOR_FORMAT, 
+			DATE_FORMAT, COLOR_FORMAT,
+            DEFAULT,
 			nil];
 }
 
+// Returns a concatenated version of an array of strings.
+- (NSString*) stringsConcatenatedWithSpaces: (NSArray*) array {
+    NSMutableString* result = [NSMutableString string];
+    for (NSString* item in array) {
+        [result appendFormat: @"%@ ", item];
+    }
+    return result;
+}
 
 - (id)filterInvoked:(NSString *)filter withArguments:(NSArray *)args onValue:(id)value
 {
@@ -87,10 +97,16 @@
 #endif
 			}
 		}
-		
-	}
-	
-	return value;
+    } else if ([filter isEqualToString: DEFAULT]) {
+        // If argument to default is either nil or the empty string, use all arguments after the default keyword instead.
+        if (!value) {
+            return [self stringsConcatenatedWithSpaces: args];
+        }
+        if ([value isKindOfClass: [NSString class]] && [(NSString*)value length] == 0) {
+            return [self stringsConcatenatedWithSpaces: args];
+        }
+    }
+    return value;
 }
 
 
