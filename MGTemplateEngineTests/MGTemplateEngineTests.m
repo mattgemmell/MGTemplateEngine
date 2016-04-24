@@ -183,6 +183,65 @@
     XCTAssertNil([delegate_ lastError], @"");
 }
 
+- (void) testNestedForLoop {
+    // Two items: A, B
+    // A has two subitems, B has none.
+    NSDictionary *subitemA1 = [NSDictionary dictionaryWithObject: @"A1" forKey: @"name"];
+    NSDictionary *subitemA2 = [NSDictionary dictionaryWithObject: @"A2" forKey: @"name"];
+    NSDictionary *itemA = [NSDictionary dictionaryWithObjectsAndKeys:
+                              @"A", @"name",
+                              [NSArray arrayWithObjects: subitemA1, subitemA2, nil], @"subitems",
+                              nil];
+    NSDictionary *itemB = [NSDictionary dictionaryWithObjectsAndKeys:
+                              @"B", @"name",
+                              [NSArray array], @"subitems",
+                              nil];
+    NSDictionary *vars = [NSDictionary dictionaryWithObject: [NSArray arrayWithObjects: itemA, itemB, nil]
+                                                     forKey: @"items"];
+    NSString *result = [engine_ processTemplate: @"{% for item in items %}{{item.name}}:{% for subitem in item.subitems %} subitem:{{subitem.name}} endsubitem{% /for %} enditem {% /for %}"
+                                  withVariables: vars];
+    
+    XCTAssertEqualObjects(@"A: subitem:A1 endsubitem subitem:A2 endsubitem enditem B: enditem ", result, @"");
+    XCTAssertNil([delegate_ lastError], @"");
+}
+
+- (void) testNestedTripleForLoop {
+    // Two items: A, B
+    // A has two subitems, B has none.
+    // One of A's subitems has a sub-sub-item.
+    NSDictionary *subitemA1 = [NSDictionary dictionaryWithObjectsAndKeys:
+                                @"A1", @"name", [NSArray arrayWithObject: @"SP 1"], @"subsubitems", nil];
+    
+    NSDictionary *subitemA2 = [NSDictionary dictionaryWithObjectsAndKeys:
+                                @"A2", @"name",
+                                [NSArray array], @"subsubitems", nil];
+    NSDictionary *itemA = [NSDictionary dictionaryWithObjectsAndKeys:
+                              @"A", @"name",
+                              [NSArray arrayWithObjects: subitemA1, subitemA2, nil], @"subitems",
+                              nil];
+    NSDictionary *itemB = [NSDictionary dictionaryWithObjectsAndKeys:
+                              @"B", @"name",
+                              [NSArray array], @"subitems",
+                              nil];
+    NSDictionary *vars = [NSDictionary dictionaryWithObject: [NSArray arrayWithObjects: itemA, itemB, nil]
+                                                     forKey: @"items"];
+    NSString *result = [engine_ processTemplate: @"{% for item in items %}item:{{item.name}}{% for subitem in item.subitems %} subitem:{{subitem.name}} {% for subsubitem in subitem.subsubitems %}{{subsubitem}}{% /for %} endsubitem{%/for %} enditem {% /for %}"
+                                  withVariables: vars];
+    // FIXME - StartStation B: shouldn't be followed by endInd because it shouldn't go through the industry loop.
+    XCTAssertEqualObjects(@"item:A subitem:A1 SP 1 endsubitem subitem:A2  endsubitem enditem item:B enditem ", result, @"");
+    XCTAssertNil([delegate_ lastError], @"");
+}
+
+// TODO: Requires more elaborate stack frames to remember when to disable output.
+- (void) disableTestAlernateForAndIf {
+    NSDictionary *vars = [NSDictionary dictionaryWithObjectsAndKeys: [NSArray array], @"emptyArray",
+                          [NSArray arrayWithObject: @"asasda"], @"itemArray", nil];
+    NSString *result = [engine_ processTemplate: @"{% for i in itemArray %}{% if true %}A{% for j in emptyArray %}{% if false %}B{% /if %}C {% /for %} D {%/if%} E {% /for %}"
+                                  withVariables: vars];
+    XCTAssertEqualObjects(@"A", result, @"");
+    XCTAssertNil([delegate_ lastError], @"");
+}
+
 // TODO: Add support for section.
 - (void) testSection {
     // Not documented, but let's add tests anyway.

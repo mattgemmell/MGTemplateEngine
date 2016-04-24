@@ -238,9 +238,9 @@
 			// Check to see if this was a block with an invalid looping condition.
 			NSNumber *disabledOutput = (NSNumber *)[frame objectForKey:FOR_STACK_DISABLED_OUTPUT];
 			if (disabledOutput && [disabledOutput boolValue]) {
-				*outputEnabled = YES;
-				*blockEnded = YES;
+                *blockEnded = YES;
 				[forStack removeLastObject];
+                *outputEnabled = ![[[forStack lastObject] objectForKey: FOR_STACK_DISABLED_OUTPUT] boolValue];
 			}
 			
 			// This is the same loop that's on top of our stack. Check to see if we need to loop back.
