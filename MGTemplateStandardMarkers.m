@@ -331,7 +331,7 @@
 		*blockEnded = YES;
 		
 	} else if ([marker isEqualToString:IF_START]) {
-		if (args && ([args count] == 1 || [args count] == 3)) {
+		if (args && ([args count] >= 1 && [args count] <= 3)) {
 			*blockStarted = YES;
 			
 			// Determine appropriate values for outputEnabled and for our if-stack frame.
@@ -398,6 +398,22 @@
 							argTrue = !argTrue;
 						}
 					}
+                } else if ([op isEqualToString:@"hasprefix"] || [op isEqualToString:@"nothasprefix"]) {
+                    NSObject *firstVal = [engine resolveVariable:firstArg];
+                    NSObject *secondVal = [engine resolveVariable:secondArg];
+                    if (!firstVal) {
+                        firstVal = firstArg;
+                    }
+                    if (!secondVal) {
+                        secondVal = secondArg;
+                    }
+                    if (firstVal && secondVal) {
+                        //NSLog(@"%@ %@", [NSString stringWithFormat:@"%@", firstVal], [NSString stringWithFormat:@"%@", secondVal]);
+                        argTrue = [[NSString stringWithFormat:@"%@", firstVal] hasPrefix:[NSString stringWithFormat:@"%@", secondVal]];
+                        if ([op isEqualToString:@"nothasprefix"]) {
+                            argTrue = !argTrue;
+                        }
+                    }
 				}
 			}
 			
