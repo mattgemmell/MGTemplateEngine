@@ -277,14 +277,12 @@
 }
 
 - (void) testMultiWordDefaultFound {
-    // Not documented, but let's add tests anyway.
     NSString *result = [engine_ processTemplate: @"{{value | default: 1601 Walnut St. Minneapolis}}"
                                   withVariables: [NSDictionary dictionaryWithObject: @"" forKey: @"value"]];
     XCTAssertEqualObjects(@"1601 Walnut St. Minneapolis ", result, @"");
     XCTAssertEqualObjects(nil, [delegate_ lastError], @"");
 }
 - (void) testDefaultWithQuotes {
-    // Not documented, but let's add tests anyway.
     NSString *result = [engine_ processTemplate: @"{{value | default: \"1601 Walnut St. Minneapolis\"}}"
                                   withVariables: [NSDictionary dictionaryWithObject: @"" forKey: @"value"]];
     XCTAssertEqualObjects(@"1601 Walnut St. Minneapolis ", result, @"");
