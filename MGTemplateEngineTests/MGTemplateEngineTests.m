@@ -200,5 +200,34 @@
     XCTAssertEqualObjects(@"", result, @"");
     XCTAssertEqualObjects(@"Marker \"/section\" reported that a block ended, but current block was started by \"if\" marker", [delegate_ lastError], @"");
 }
+
+- (void) testDefaultIgnored {
+    NSString *result = [engine_ processTemplate: @"{{value | default: bar}}"
+                                  withVariables: [NSDictionary dictionaryWithObject: @"foo" forKey: @"value"]];
+    XCTAssertEqualObjects(@"foo", result, @"");
+    XCTAssertEqualObjects(nil, [delegate_ lastError], @"");
+}
+
+- (void) testDefaultFound {
+    NSString *result = [engine_ processTemplate: @"{{value | default: bar}}"
+                                  withVariables: [NSDictionary dictionaryWithObject: @"" forKey: @"value"]];
+    XCTAssertEqualObjects(@"bar ", result, @"");
+    XCTAssertEqualObjects(nil, [delegate_ lastError], @"");
+}
+
+- (void) testMultiWordDefaultFound {
+    // Not documented, but let's add tests anyway.
+    NSString *result = [engine_ processTemplate: @"{{value | default: 1601 Walnut St. Minneapolis}}"
+                                  withVariables: [NSDictionary dictionaryWithObject: @"" forKey: @"value"]];
+    XCTAssertEqualObjects(@"1601 Walnut St. Minneapolis ", result, @"");
+    XCTAssertEqualObjects(nil, [delegate_ lastError], @"");
+}
+- (void) testDefaultWithQuotes {
+    // Not documented, but let's add tests anyway.
+    NSString *result = [engine_ processTemplate: @"{{value | default: \"1601 Walnut St. Minneapolis\"}}"
+                                  withVariables: [NSDictionary dictionaryWithObject: @"" forKey: @"value"]];
+    XCTAssertEqualObjects(@"1601 Walnut St. Minneapolis ", result, @"");
+    XCTAssertEqualObjects(nil, [delegate_ lastError], @"");
+}
 @end
 
