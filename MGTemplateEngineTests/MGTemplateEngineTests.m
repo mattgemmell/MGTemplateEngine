@@ -170,7 +170,7 @@
 }
 
 - (void) testNestedIf {
-    NSString *result = [engine_ processTemplate: @"{% if false %}level1{% if false}level2{% /if %}level1{% /if %}level0"
+    NSString *result = [engine_ processTemplate: @"{% if false %}level1{% if false %}level2{% /if %}level1{% /if %}level0"
                                   withVariables: [NSDictionary dictionaryWithObject: [NSArray array] forKey: @"foo"]];
     XCTAssertEqualObjects(@"level0", result, @"");
     XCTAssertNil([delegate_ lastError], @"");
