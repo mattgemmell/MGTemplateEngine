@@ -109,11 +109,17 @@
     XCTAssertNil([delegate_ lastError], @"");
 }
 
-// TODO(bowdidge): This fails - comparisons only work on numbers.
-- (void) disableTestCompareMatchingStrings {
+- (void) testCompareMatchingStrings {
     NSString *result = [engine_ processTemplate: @"Is x equalsstring y? {% if x equalsstring y %} Yes! {% else %} No! {% /if %}"
-                                  withVariables: [NSDictionary dictionaryWithObjectsAndKeys: @"x", @"x", @"y", @"y", nil]];
+                                  withVariables: [NSDictionary dictionaryWithObjectsAndKeys: @"foo", @"x", @"foo", @"y", nil]];
     XCTAssertEqualObjects(@"Is x equalsstring y?  Yes! ", result, @"");
+    XCTAssertNil([delegate_ lastError], @"");
+}
+
+- (void) testCompareNotMatchingStrings {
+    NSString *result = [engine_ processTemplate: @"Is x equalsstring y? {% if x equalsstring y %} Yes! {% else %} No! {% /if %}"
+                                  withVariables: [NSDictionary dictionaryWithObjectsAndKeys: @"foo", @"x", @"bar", @"y", nil]];
+    XCTAssertEqualObjects(@"Is x equalsstring y?  No! ", result, @"");
     XCTAssertNil([delegate_ lastError], @"");
 }
 
@@ -170,7 +176,7 @@
 }
 
 - (void) testNestedIf {
-    NSString *result = [engine_ processTemplate: @"{% if false %}level1{% if false}level2{% /if %}level1{% /if %}level0"
+    NSString *result = [engine_ processTemplate: @"{% if false %}level1{% if false %}level2{% /if %}level1{% /if %}level0"
                                   withVariables: [NSDictionary dictionaryWithObject: [NSArray array] forKey: @"foo"]];
     XCTAssertEqualObjects(@"level0", result, @"");
     XCTAssertNil([delegate_ lastError], @"");
@@ -183,22 +189,77 @@
     XCTAssertNil([delegate_ lastError], @"");
 }
 
-// TODO: Add support for section.
+- (void) testNestedForLoop {
+    // Two items: A, B
+    // A has two subitems, B has none.
+    NSDictionary *subitemA1 = [NSDictionary dictionaryWithObject: @"A1" forKey: @"name"];
+    NSDictionary *subitemA2 = [NSDictionary dictionaryWithObject: @"A2" forKey: @"name"];
+    NSDictionary *itemA = [NSDictionary dictionaryWithObjectsAndKeys:
+                              @"A", @"name",
+                              [NSArray arrayWithObjects: subitemA1, subitemA2, nil], @"subitems",
+                              nil];
+    NSDictionary *itemB = [NSDictionary dictionaryWithObjectsAndKeys:
+                              @"B", @"name",
+                              [NSArray array], @"subitems",
+                              nil];
+    NSDictionary *vars = [NSDictionary dictionaryWithObject: [NSArray arrayWithObjects: itemA, itemB, nil]
+                                                     forKey: @"items"];
+    NSString *result = [engine_ processTemplate: @"{% for item in items %}{{item.name}}:{% for subitem in item.subitems %} subitem:{{subitem.name}} endsubitem{% /for %} enditem {% /for %}"
+                                  withVariables: vars];
+    
+    XCTAssertEqualObjects(@"A: subitem:A1 endsubitem subitem:A2 endsubitem enditem B: enditem ", result, @"");
+    XCTAssertNil([delegate_ lastError], @"");
+}
+
+- (void) testNestedTripleForLoop {
+    // Two items: A, B
+    // A has two subitems, B has none.
+    // One of A's subitems has a sub-sub-item.
+    NSDictionary *subitemA1 = [NSDictionary dictionaryWithObjectsAndKeys:
+                                @"A1", @"name", [NSArray arrayWithObject: @"SP 1"], @"subsubitems", nil];
+    
+    NSDictionary *subitemA2 = [NSDictionary dictionaryWithObjectsAndKeys:
+                                @"A2", @"name",
+                                [NSArray array], @"subsubitems", nil];
+    NSDictionary *itemA = [NSDictionary dictionaryWithObjectsAndKeys:
+                              @"A", @"name",
+                              [NSArray arrayWithObjects: subitemA1, subitemA2, nil], @"subitems",
+                              nil];
+    NSDictionary *itemB = [NSDictionary dictionaryWithObjectsAndKeys:
+                              @"B", @"name",
+                              [NSArray array], @"subitems",
+                              nil];
+    NSDictionary *vars = [NSDictionary dictionaryWithObject: [NSArray arrayWithObjects: itemA, itemB, nil]
+                                                     forKey: @"items"];
+    NSString *result = [engine_ processTemplate: @"{% for item in items %}item:{{item.name}}{% for subitem in item.subitems %} subitem:{{subitem.name}} {% for subsubitem in subitem.subsubitems %}{{subsubitem}}{% /for %} endsubitem{%/for %} enditem {% /for %}"
+                                  withVariables: vars];
+    XCTAssertEqualObjects(@"item:A subitem:A1 SP 1 endsubitem subitem:A2  endsubitem enditem item:B enditem ", result, @"");
+    XCTAssertNil([delegate_ lastError], @"");
+}
+
+// Another test to make sure the interpreter is correctly remembering state when parsing loops with no elements.
+- (void) testAlernateForAndIf {
+    NSDictionary *vars = [NSDictionary dictionaryWithObjectsAndKeys: [NSArray array], @"emptyArray",
+                          [NSArray arrayWithObject: @"asasda"], @"itemArray", nil];
+    NSString *result = [engine_ processTemplate: @"{% for i in itemArray %}{% if true %}A{% for j in emptyArray %}{% if false %}B{% /if %}C {% /for %} D {%/if%} E {% /for %}"
+                                  withVariables: vars];
+    XCTAssertEqualObjects(@"A D  E ", result, @"");
+    XCTAssertNil([delegate_ lastError], @"");
+}
+
+// TODO: Test that delegate was called at the begin and end of each section.
 - (void) testSection {
-    // Not documented, but let's add tests anyway.
+    NSString *result = [engine_ processTemplate: @"{%section js%}<script></script>{%/section%}{%section BODY %}Hello, World{%/section%}"
+                                  withVariables: [NSDictionary dictionary]];
+    XCTAssertEqualObjects(@"<script></script>Hello, World", result, @"");
+    XCTAssertNil([delegate_ lastError], @"");
+}
+
+- (void) testErrorWithMissingSectionName {
     NSString *result = [engine_ processTemplate: @"{%section%}Hello, World{%/section%}"
                                   withVariables: [NSDictionary dictionary]];
     XCTAssertEqualObjects(@"Hello, World", result, @"");
     XCTAssertEqualObjects(@"Marker \"/section\" reported that a non-existent block ended", [delegate_ lastError], @"");
-}
-
-// TODO: Add support for section.
-- (void) testSectionAndIf {
-    // Not documented, but let's add tests anyway.
-    NSString *result = [engine_ processTemplate: @"{%if false%}{%section%}Hello, World{%/section%}{%/if%}"
-                                  withVariables: [NSDictionary dictionary]];
-    XCTAssertEqualObjects(@"", result, @"");
-    XCTAssertEqualObjects(@"Marker \"/section\" reported that a block ended, but current block was started by \"if\" marker", [delegate_ lastError], @"");
 }
 
 - (void) testDefaultIgnored {
@@ -216,14 +277,12 @@
 }
 
 - (void) testMultiWordDefaultFound {
-    // Not documented, but let's add tests anyway.
     NSString *result = [engine_ processTemplate: @"{{value | default: 1601 Walnut St. Minneapolis}}"
                                   withVariables: [NSDictionary dictionaryWithObject: @"" forKey: @"value"]];
     XCTAssertEqualObjects(@"1601 Walnut St. Minneapolis ", result, @"");
     XCTAssertEqualObjects(nil, [delegate_ lastError], @"");
 }
 - (void) testDefaultWithQuotes {
-    // Not documented, but let's add tests anyway.
     NSString *result = [engine_ processTemplate: @"{{value | default: \"1601 Walnut St. Minneapolis\"}}"
                                   withVariables: [NSDictionary dictionaryWithObject: @"" forKey: @"value"]];
     XCTAssertEqualObjects(@"1601 Walnut St. Minneapolis ", result, @"");
